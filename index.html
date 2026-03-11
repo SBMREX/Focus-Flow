@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Flow - Ing. Saúl Briceño</title>
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#09090b">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { background: #09090b; color: #f4f4f5; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; transition: box-shadow 0.5s ease; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
+        .glass-card { background: linear-gradient(145deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.4) 100%); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); transition: all 0.3s ease; }
+        
+        /* Efecto de Tarea Activa */
+        .task-active { border: 1px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); transform: scale(1.02); }
+        
+        /* Barra de Flow */
+        .flow-container { background: rgba(0,0,0,0.5); border-radius: 999px; overflow: hidden; height: 12px; width: 100%; border: 1px solid rgba(255,255,255,0.1); }
+        .flow-bar { height: 100%; background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981, #3b82f6, #8b5cf6); transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); width: 0%; }
+        .flow-max { box-shadow: inset 0 0 50px rgba(139, 92, 246, 0.2); }
+
+        .tab-active { border-bottom: 2px solid #60a5fa; color: #60a5fa; font-weight: 600; }
+        .timer-active { color: #fcd34d; text-shadow: 0 0 15px rgba(252, 211, 77, 0.4); }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body id="mainBody" class="p-4 flex flex-col min-h-screen relative">
+
+    <div id="loginScreen" class="flex-grow flex flex-col items-center justify-center animate__animated animate__fadeIn">
+        <div class="glass p-8 rounded-3xl w-full max-w-sm shadow-2xl text-center">
+            <h1 class="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">Focus Flow</h1>
+            <p id="loginMessage" class="text-sm text-gray-400 mb-8">Ingresa tus datos o crea una cuenta</p>
+            <input id="username" type="text" placeholder="Usuario" class="w-full bg-black/40 border border-gray-700 rounded-xl p-3 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
+            <input id="password" type="password" placeholder="Contraseña" class="w-full bg-black/40 border border-gray-700 rounded-xl p-3 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
+            <div class="flex items-center gap-2 mb-8 text-sm text-gray-400">
+                <input type="checkbox" id="keepLogged" class="w-4 h-4 accent-blue-500 rounded bg-gray-800 border-gray-700">
+                <label for="keepLogged">Mantener sesión iniciada</label>
+            </div>
+            <button onclick="handleLogin()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95">ENTRAR / CREAR</button>
+            <p id="loginError" class="text-red-400 text-xs mt-4 hidden">Contraseña incorrecta.</p>
+        </div>
+    </div>
+
+    <div id="mainApp" class="max-w-md mx-auto w-full flex-grow hidden animate__animated animate__fadeIn">
+        
+        <header class="mb-4 mt-2 flex justify-between items-center px-1">
+            <div class="flex items-center gap-3">
+                <div onclick="openProfileModal()" class="w-12 h-12 rounded-full border-2 border-blue-500/50 overflow-hidden cursor-pointer flex-shrink-0 shadow-lg bg-gray-800 flex items-center justify-center">
+                    <img id="headerProfilePic" src="" class="w-full h-full object-cover hidden">
+                    <span id="headerProfileInitial" class="text-xl font-black text-gray-400">?</span>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent leading-none">Focus Flow</h1>
+                    <p id="welcomeUser" class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mt-1">HOLA, SAÚL</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="p-2 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold hover:bg-red-500/20 transition-colors">SALIR</button>
+        </header>
+
+        <div class="mb-6 px-1">
+            <div class="flex justify-between items-end mb-1">
+                <span class="text-[10px] font-bold tracking-widest text-gray-400">NIVEL DE FLOW 🔥</span>
+                <span id="flowPercentage" class="text-xs font-mono font-bold text-blue-400">0%</span>
+            </div>
+            <div class="flow-container">
+                <div id="flowBar" class="flow-bar"></div>
+            </div>
+            <p class="text-[9px] text-gray-500 text-right mt-1">Pierdes 0.5% cada minuto. ¡Mantente activo!</p>
+        </div>
+
+        <div id="tabContainer" class="flex overflow-x-auto no-scrollbar mb-6 border-b border-gray-800/50 px-2 gap-4 whitespace-nowrap pb-1"></div>
+
+        <div class="glass p-6 rounded-3xl mb-8 shadow-2xl">
+            <input id="taskInput" type="text" placeholder="Nueva tarea..." class="w-full bg-transparent border-b border-gray-700 p-2 outline-none mb-6 text-xl text-white placeholder-gray-600 focus:border-blue-500 transition-colors">
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">TIEMPO (MIN)</span>
+                    <input id="taskTime" type="number" min="1" max="120" value="25" class="bg-black/40 rounded-xl px-3 py-2 w-20 text-center text-blue-400 font-mono font-bold border border-gray-800 outline-none focus:border-blue-500">
+                </div>
+                <div class="flex flex-col flex-grow">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA (OPCIONAL)</span>
+                    <input id="taskDate" type="date" class="bg-black/40 rounded-xl px-3 py-2 w-full text-gray-300 text-sm border border-gray-800 outline-none focus:border-blue-500">
+                </div>
+            </div>
+            <div class="flex flex-col mb-6">
+                <span class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">APARTADO</span>
+                <div id="contextButtons" class="flex flex-wrap gap-2"></div>
+            </div>
+            <button onclick="addTask()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95">AGREGAR TAREA</button>
+        </div>
+
+        <div id="taskList" class="space-y-4 pb-10"></div>
+    </div>
+
+    <footer class="mt-auto py-6 text-center opacity-60">
+        <div class="inline-flex items-center justify-center gap-2">
+            <div class="h-px w-8 bg-gradient-to-r from-transparent to-gray-500"></div>
+            <span class="text-xs font-medium tracking-widest text-gray-400">DESIGNED BY <span class="text-gray-200">ING. SAÚL BRICEÑO</span></span>
+            <div class="h-px w-8 bg-gradient-to-l from-transparent to-gray-500"></div>
+        </div>
+    </footer>
+
+    <div id="profileModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex-col items-center justify-center p-4">
+        <div class="glass-card p-8 rounded-3xl w-full max-w-sm text-center border border-gray-700 shadow-2xl">
+            <h2 class="text-xl font-bold mb-6 tracking-wide">Editar Perfil</h2>
+            <div class="relative w-28 h-28 mx-auto mb-6">
+                <div class="w-full h-full rounded-full border-4 border-blue-500/50 overflow-hidden bg-gray-800 flex items-center justify-center">
+                    <img id="previewProfilePic" src="" class="w-full h-full object-cover hidden">
+                    <span id="previewProfileInitial" class="text-4xl font-black text-gray-400">?</span>
+                </div>
+                <label for="picUpload" class="absolute bottom-0 right-0 bg-blue-500 text-white p-2.5 rounded-full cursor-pointer shadow-lg border-2 border-gray-900">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </label>
+                <input type="file" id="picUpload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+            </div>
+            <div class="text-left mb-6">
+                <label class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider block">CÓMO QUIERES QUE TE LLAME</label>
+                <input id="displayNameInput" type="text" class="w-full bg-black/40 border border-gray-700 rounded-xl p-3 outline-none text-white text-center font-bold text-lg focus:border-blue-500">
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeProfileModal()" class="flex-1 py-3 rounded-xl border border-gray-600 text-sm font-semibold">Cancelar</button>
+                <button onclick="saveProfile()" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUTH & PERFIL --- (Misma lógica anterior)
+        let base64ImageTemp = null;
+        function checkAuth() {
+            const savedUser = localStorage.getItem('ff_user');
+            if (savedUser) {
+                document.getElementById('username').value = savedUser;
+                if (localStorage.getItem('ff_keepLogged') === 'true') showApp();
+            }
+        }
+        function handleLogin() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            if (!user || !pass) return;
+            const savedUser = localStorage.getItem('ff_user'), savedPass = localStorage.getItem('ff_pass');
+            if (!savedUser) {
+                localStorage.setItem('ff_user', user); localStorage.setItem('ff_pass', pass);
+                localStorage.setItem('ff_displayName', user); localStorage.setItem('ff_keepLogged', document.getElementById('keepLogged').checked);
+                showApp();
+            } else if (user === savedUser && pass === savedPass) {
+                localStorage.setItem('ff_keepLogged', document.getElementById('keepLogged').checked);
+                showApp();
+            } else document.getElementById('loginError').classList.remove('hidden');
+        }
+        function logout() { localStorage.setItem('ff_keepLogged', 'false'); document.location.reload(); }
+        function showApp() { 
+            document.getElementById('loginScreen').classList.add('hidden'); 
+            document.getElementById('mainApp').classList.remove('hidden'); 
+            loadUserProfile(); initApp(); 
+        }
+        function loadUserProfile() {
+            const name = localStorage.getItem('ff_displayName') || 'Usuario', pic = localStorage.getItem('ff_profilePic');
+            document.getElementById('welcomeUser').innerText = `HOLA, ${name.toUpperCase()}`;
+            if (pic) { document.getElementById('headerProfilePic').src = pic; document.getElementById('headerProfilePic').classList.remove('hidden'); document.getElementById('headerProfileInitial').classList.add('hidden'); }
+        }
+        function openProfileModal() {
+            document.getElementById('displayNameInput').value = localStorage.getItem('ff_displayName') || '';
+            document.getElementById('profileModal').classList.remove('hidden'); document.getElementById('profileModal').classList.add('flex');
+        }
+        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); document.getElementById('profileModal').classList.remove('flex'); }
+        function handleImageUpload(e) {
+            const reader = new FileReader();
+            reader.onload = function(e) { base64ImageTemp = e.target.result; document.getElementById('previewProfilePic').src = base64ImageTemp; document.getElementById('previewProfilePic').classList.remove('hidden'); document.getElementById('previewProfileInitial').classList.add('hidden'); };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+        function saveProfile() {
+            if(document.getElementById('displayNameInput').value) localStorage.setItem('ff_displayName', document.getElementById('displayNameInput').value);
+            if(base64ImageTemp) localStorage.setItem('ff_profilePic', base64ImageTemp);
+            loadUserProfile(); closeProfileModal();
+        }
+
+        // --- SISTEMA DE FLOW (GAMIFICACIÓN) ---
+        let flowMomentum = parseFloat(localStorage.getItem('ff_momentum')) || 0;
+        let decayInterval;
+
+        function calculateDecay() {
+            const now = Date.now();
+            const lastTime = parseInt(localStorage.getItem('ff_lastTime')) || now;
+            const diffMinutes = Math.floor((now - lastTime) / 60000); // Minutos transcurridos
+
+            if (diffMinutes > 0) {
+                // Pierde 0.5% por cada minuto de inactividad
+                flowMomentum = Math.max(0, flowMomentum - (diffMinutes * 0.5));
+                localStorage.setItem('ff_lastTime', now);
+                saveFlow();
+            }
+            updateFlowUI();
+        }
+
+        function addFlow(amount) {
+            flowMomentum = Math.min(100, flowMomentum + amount);
+            localStorage.setItem('ff_lastTime', Date.now()); // Resetea el reloj de decaimiento
+            saveFlow();
+            updateFlowUI();
+
+            if (flowMomentum === 100) {
+                triggerMaxFlowReward();
+            }
+        }
+
+        function saveFlow() { localStorage.setItem('ff_momentum', flowMomentum.toString()); }
+
+        function updateFlowUI() {
+            const bar = document.getElementById('flowBar');
+            const text = document.getElementById('flowPercentage');
+            const body = document.getElementById('mainBody');
+            
+            bar.style.width = `${flowMomentum}%`;
+            text.innerText = `${Math.floor(flowMomentum)}%`;
+
+            // Cambia el color del texto según el nivel
+            if(flowMomentum < 30) text.className = "text-xs font-mono font-bold text-red-400";
+            else if(flowMomentum < 70) text.className = "text-xs font-mono font-bold text-yellow-400";
+            else text.className = "text-xs font-mono font-bold text-blue-400";
+
+            // Efecto global si está al máximo
+            if(flowMomentum >= 100) body.classList.add('flow-max');
+            else body.classList.remove('flow-max');
+        }
+
+        function triggerMaxFlowReward() {
+            // Lanza confeti
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#3b82f6', '#8b5cf6', '#10b981'] });
+            // Alerta motivacional
+            setTimeout(() => alert("¡ESTADO DE FLUJO ALCANZADO! 🚀 Máxima Productividad."), 500);
+        }
+
+        // Inicia el ciclo de decaimiento (revisa cada minuto)
+        setInterval(() => { calculateDecay(); }, 60000);
+
+        // --- SISTEMA DE TAREAS ---
+        let tasks, contexts, currentFilter, selectedContext, interval;
+
+        function initApp() {
+            tasks = JSON.parse(localStorage.getItem('tasks_v7')) || [];
+            contexts = JSON.parse(localStorage.getItem('contexts_v1')) || [{ id: 'hogar', name: 'Hogar', icon: '🏠' }, { id: 'trabajo', name: 'Trabajo', icon: '💼' }];
+            currentFilter = 'Todos'; selectedContext = contexts[0].id;
+            
+            calculateDecay(); // Calcula lo que perdiste desde la última vez que abriste la app
+            
+            renderTabs(); renderContextButtons(); renderTasks();
+        }
+
+        function renderTabs() { /* Mismo código de pestañas */
+            const container = document.getElementById('tabContainer');
+            container.innerHTML = `<button onclick="setFilter('Todos')" class="pb-2 transition-all text-sm ${currentFilter === 'Todos' ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}">Visión General</button>`;
+            contexts.forEach(ctx => { container.innerHTML += `<button onclick="setFilter('${ctx.id}')" class="pb-2 transition-all text-sm ${currentFilter === ctx.id ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}">${ctx.icon} ${ctx.name}</button>`; });
+        }
+
+        function renderContextButtons() { /* Mismo código botones */
+            const container = document.getElementById('contextButtons'); container.innerHTML = '';
+            contexts.forEach(ctx => { const act = selectedContext === ctx.id ? 'border-blue-500/50 bg-blue-500/20 text-blue-300' : 'border-gray-700 text-gray-400 opacity-60';
+                container.innerHTML += `<button onclick="setContext('${ctx.id}')" class="px-3 py-1.5 rounded-xl border ${act} text-sm">${ctx.icon} ${ctx.name}</button>`; });
+            container.innerHTML += `<button onclick="addNewContext()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-600 text-gray-500 text-sm">+ Nuevo</button>`;
+        }
+        function setContext(id) { selectedContext = id; renderContextButtons(); }
+        function addNewContext() {
+            const name = prompt("Nuevo apartado:"); if(!name) return;
+            contexts.push({ id: name.toLowerCase().replace(/[^a-z0-9]/g, ''), name: name, icon: prompt("Emoji:") || "📌" });
+            localStorage.setItem('contexts_v1', JSON.stringify(contexts)); renderTabs();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskList'); container.innerHTML = '';
+            let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
+            
+            filtered.forEach((t) => {
+                const globalIndex = tasks.indexOf(t);
+                const mins = Math.floor(t.timeLeft / 60), secs = t.timeLeft % 60;
+                const taskContext = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '❓' };
+                
+                // Si la tarea tiene el cronómetro activo, le ponemos estilo especial
+                const activeStyle = t.isRunning ? 'task-active' : '';
+
+                const div = document.createElement('div');
+                div.className = `glass-card p-5 rounded-2xl flex flex-col gap-4 animate__animated animate__fadeIn ${activeStyle}`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1.5"><span class="text-xs opacity-80">${taskContext.icon} <span class="text-[10px] uppercase text-gray-400">${taskContext.name}</span></span></div>
+                            <p class="text-base font-medium leading-snug text-gray-100">${t.text}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-2xl font-mono ${t.isRunning ? 'timer-active' : 'text-gray-500'}">${mins}:${secs < 10 ? '0' : ''}${secs}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        ${!t.isStarted && !t.isRunning ? 
+                            // Botón de ARRANCAR explícito
+                            `<button onclick="startTask(${globalIndex})" class="flex-1 py-2.5 rounded-xl bg-blue-600/20 border border-blue-500/50 hover:bg-blue-600/40 text-xs font-bold text-blue-300 transition-colors">🔥 ARRANCAR</button>` 
+                            : 
+                            // Controles normales una vez arrancada
+                            `<button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/5 text-xs font-semibold text-gray-300">${t.isRunning ? '⏸ PAUSAR' : '▶ RETOMAR'}</button>`
+                        }
+                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-xs font-bold text-white shadow-lg active:scale-95">HECHO ✓</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput'), time = document.getElementById('taskTime'), date = document.getElementById('taskDate');
+            if (!input.value.trim()) return;
+            let mins = parseInt(time.value) || 25;
+            // La tarea se crea con "isStarted: false"
+            tasks.push({ text: input.value, contextId: selectedContext, timeLeft: (mins > 120 ? 120 : mins) * 60, isRunning: false, isStarted: false, date: date.value || null });
+            saveAndRender(); input.value = ''; date.value = '';
+        }
+
+        function setFilter(f) { currentFilter = f; renderTabs(); renderTasks(); }
+
+        // Nueva función explícita para Iniciar
+        function startTask(index) {
+            tasks.forEach(t => t.isRunning = false); // Pausa las demás
+            tasks[index].isStarted = true;
+            tasks[index].isRunning = true;
+            manageTimer(index);
+            saveAndRender();
+        }
+
+        function toggleTimer(index) {
+            tasks.forEach((t, i) => { if(i !== index) t.isRunning = false; });
+            tasks[index].isRunning = !tasks[index].isRunning;
+            manageTimer(index);
+            saveAndRender();
+        }
+
+        function manageTimer(index) {
+            clearInterval(interval);
+            if (tasks[index].isRunning) {
+                interval = setInterval(() => {
+                    if (tasks[index].timeLeft > 0) { tasks[index].timeLeft--; saveAndRender(); } 
+                    else { clearInterval(interval); tasks[index].isRunning = false; saveAndRender(); }
+                }, 1000);
+            }
+        }
+
+        function completeTask(index) { 
+            tasks.splice(index, 1); 
+            clearInterval(interval); 
+            saveAndRender(); 
+            
+            // Recompensa al terminar: +35% de Flow
+            addFlow(35);
+        }
+        
+        function saveAndRender() { localStorage.setItem('tasks_v7', JSON.stringify(tasks)); renderTasks(); }
+
+        checkAuth();
+    </script>
+</body>
+</html>
+        // Renderizar los botones para elegir dónde guardar la tarea
+        function renderContextButtons() {
+            const container = document.getElementById('contextButtons');
+            container.innerHTML = '';
+            
+            contexts.forEach(ctx => {
+                const isSelected = selectedContext === ctx.id;
+                const activeClasses = isSelected ? 'border-blue-500/50 bg-blue-500/20 text-blue-300' : 'border-gray-700 text-gray-400 opacity-60 hover:opacity-100';
+                
+                container.innerHTML += `
+                    <button onclick="setContext('${ctx.id}')" class="px-3 py-1.5 rounded-xl border ${activeClasses} text-sm transition-all flex items-center gap-1">
+                        ${ctx.icon} ${ctx.name}
+                    </button>
+                `;
+            });
+
+            // Botón para agregar un nuevo apartado
+            container.innerHTML += `
+                <button onclick="addNewContext()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-600 text-gray-500 text-sm hover:border-blue-400 hover:text-blue-400 transition-all flex items-center">
+                    + Nuevo
+                </button>
+            `;
+        }
+
+        function setContext(id) {
+            selectedContext = id;
+            renderContextButtons();
+        }
+
+        // Función para crear un apartado nuevo (Usa alertas nativas para mantenerlo simple)
+        function addNewContext() {
+            const name = prompt("¿Cómo se llamará el nuevo apartado? (Ej. Colegio, Tiendita)");
+            if (!name || name.trim() === "") return;
+            
+            const icon = prompt("Escribe un emoji para identificarlo (Ej. 🏪, 🎓):") || "📌";
+            
+            const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            contexts.push({ id: newId, name: name.trim(), icon: icon.trim() });
+            localStorage.setItem('contexts_v1', JSON.stringify(contexts));
+            
+            setContext(newId);
+            renderTabs();
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskList');
+            container.innerHTML = '';
+            
+            let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
+            const today = new Date().toISOString().split('T')[0];
+
+            filtered.forEach((t) => {
+                const globalIndex = tasks.indexOf(t);
+                const mins = Math.floor(t.timeLeft / 60);
+                const secs = t.timeLeft % 60;
+                
+                // Encontrar los datos del contexto de la tarea
+                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Desconocido', icon: '❓' };
+                
+                let dateBadge = '';
+                if (t.date) {
+                    const isOverdueOrToday = t.date <= today;
+                    const badgeColor = isOverdueOrToday ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-gray-800 text-gray-400 border-gray-700';
+                    const icon = isOverdueOrToday ? '⚠️' : '📅';
+                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeColor} flex items-center gap-1">${icon} ${t.date}</span>`;
+                }
+
+                const div = document.createElement('div');
+                div.className = "glass-card p-5 rounded-2xl flex flex-col gap-4 animate__animated animate__fadeIn";
+                div.innerHTML = `
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="text-xs opacity-80">${taskContext.icon} <span class="text-[10px] uppercase text-gray-400">${taskContext.name}</span></span>
+                                ${dateBadge}
+                            </div>
+                            <p class="text-base font-medium leading-snug text-gray-100">${t.text}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-2xl font-mono ${t.isRunning ? 'timer-active' : 'text-gray-500'}">${mins}:${secs < 10 ? '0' : ''}${secs}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-colors text-xs font-semibold tracking-wide text-gray-300">
+                            ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
+                        </button>
+                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-lg transition-transform active:scale-95">HECHO ✓</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const timeInput = document.getElementById('taskTime');
+            const dateInput = document.getElementById('taskDate');
+            
+            let mins = parseInt(timeInput.value) || 25;
+            if (mins > 120) mins = 120;
+
+            if (input.value.trim() === '') return;
+
+            tasks.push({ 
+                text: input.value, 
+                contextId: selectedContext, 
+                timeLeft: mins * 60,
+                isRunning: false,
+                date: dateInput.value || null
+            });
+            saveAndRender();
+            
+            input.value = '';
+            dateInput.value = '';
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            renderTabs();
+            renderTasks();
+        }
+
+        function toggleTimer(index) {
+            tasks.forEach((t, i) => { if(i !== index) t.isRunning = false; });
+            tasks[index].isRunning = !tasks[index].isRunning;
+            
+            clearInterval(interval);
+            if (tasks[index].isRunning) {
+                interval = setInterval(() => {
+                    if (tasks[index].timeLeft > 0) {
+                        tasks[index].timeLeft--;
+                        saveAndRender();
+                    } else {
+                        clearInterval(interval);
+                        tasks[index].isRunning = false;
+                        saveAndRender();
+                    }
+                }, 1000);
+            }
+            saveAndRender();
+        }
+
+        function completeTask(index) {
+            tasks.splice(index, 1);
+            clearInterval(interval);
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('tasks_v6', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        // Inicializar la interfaz
+        renderTabs();
+        renderContextButtons();
+        renderTasks();
+    </script>
+</body>
+</html>

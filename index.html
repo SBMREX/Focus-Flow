@@ -27,7 +27,7 @@
         .req-fail { color: #6b7280; }
     </style>
 </head>
-<body class="p-4 flex flex-col min-h-screen">
+<body class="p-4 flex flex-col min-h-screen relative overflow-x-hidden">
 
     <div id="loginScreen" class="max-w-md mx-auto w-full flex-grow flex flex-col justify-center animate__animated animate__fadeIn">
         <div class="text-center mb-8">
@@ -37,7 +37,7 @@
         </div>
 
         <div class="glass p-8 rounded-3xl shadow-2xl">
-            <input id="loginUser" type="text" placeholder="Usuario (Credencial)" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-4 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
+            <input id="loginUser" type="text" placeholder="Usuario" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-4 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
             <input id="loginPass" type="password" placeholder="Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-4 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
             
             <div class="flex items-center gap-3 mb-8">
@@ -57,12 +57,7 @@
         </div>
 
         <div class="glass p-6 rounded-3xl shadow-2xl space-y-4">
-            <div>
-                <input id="regUser" type="text" placeholder="Usuario" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
-                <p class="text-[10px] text-gray-500 mt-1 ml-1">⚠️ Este usuario es tu credencial, solo sirve para iniciar sesión.</p>
-            </div>
-            
-            <input id="regName" type="text" placeholder="Nombre a mostrar en la app" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
+            <input id="regUser" type="text" placeholder="Usuario" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
             
             <select id="regGender" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-gray-300 focus:border-blue-500 text-sm">
                 <option value="" disabled selected>Selecciona tu género...</option>
@@ -91,9 +86,9 @@
     <div id="mainApp" class="max-w-md mx-auto w-full flex-grow hidden animate__animated animate__fadeIn">
         
         <header class="mb-6 mt-2 flex justify-between items-center">
-            <div>
+            <div onclick="editarNombre()" class="cursor-pointer">
                 <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Focus Flow</h1>
-                <p id="userGreeting" class="text-xs text-gray-400 mt-1">Hola, <span class="font-bold text-white">Usuario</span></p>
+                <p id="userGreeting" class="text-xs text-gray-400 mt-1">Hola, <span class="font-bold text-white hover:text-blue-400 transition-colors">Usuario</span></p>
             </div>
             <button onclick="cerrarSesion()" class="text-xs text-red-400 border border-red-500/30 px-3 py-1 rounded-lg hover:bg-red-500/10">Salir</button>
         </header>
@@ -104,41 +99,23 @@
         </div>
 
         <div class="flex bg-black/40 rounded-xl p-1 mb-6">
-            <button id="navTasks" onclick="switchMainView('tasks')" class="flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all">Mis Tareas</button>
+            <button id="navTasks" onclick="switchMainView('tasks')" class="flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all">Visión General</button>
             <button id="navStats" onclick="switchMainView('stats')" class="flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all">Mi Progreso</button>
         </div>
 
         <div id="viewTasks">
             <div id="tabContainer" class="flex overflow-x-auto no-scrollbar mb-6 border-b border-gray-800/50 px-2 gap-4 whitespace-nowrap pb-1"></div>
-
-            <div class="glass p-6 rounded-3xl mb-8 shadow-2xl">
-                <input id="taskInput" type="text" placeholder="Nueva tarea..." class="w-full bg-transparent border-b border-gray-700 p-2 outline-none mb-6 text-lg text-white placeholder-gray-600 focus:border-blue-500 transition-colors">
-                
-                <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">MINUTOS</span>
-                        <input id="taskTime" type="number" min="1" max="120" value="25" class="bg-black/40 rounded-xl px-3 py-2 w-20 text-center text-blue-400 font-mono font-bold border border-gray-800 outline-none focus:border-blue-500">
-                    </div>
-                    <div class="flex flex-col flex-grow">
-                        <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA</span>
-                        <input id="taskDate" type="date" class="bg-black/40 rounded-xl px-3 py-2 w-full text-gray-300 text-sm border border-gray-800 outline-none focus:border-blue-500">
-                    </div>
-                </div>
-
-                <div class="flex flex-col mb-6">
-                    <span class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">APARTADO</span>
-                    <div id="contextButtons" class="flex flex-wrap gap-2"></div>
-                </div>
-
-                <button onclick="addTask()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95 transition-all">AGREGAR TAREA</button>
+            
+            <div id="taskList" class="space-y-4 pb-24"></div>
+            
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-10 opacity-50">
+                <span class="text-4xl mb-2">✨</span>
+                <p class="text-sm">Todo despejado. Toca el + para empezar.</p>
             </div>
-
-            <div id="taskList" class="space-y-4 pb-10"></div>
         </div>
 
-        <div id="viewStats" class="hidden pb-10">
+        <div id="viewStats" class="hidden pb-24">
             <h2 class="text-xl font-bold mb-4 text-blue-400">Analíticas de Productividad</h2>
-            
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="glass-card p-4 rounded-2xl text-center">
                     <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Mejor Hora</p>
@@ -150,42 +127,87 @@
                 </div>
                 <div class="glass-card p-4 rounded-2xl text-center col-span-2">
                     <div class="flex justify-between items-center mb-2">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área de Mayor Rendimiento</p>
-                        <span id="statBestArea" class="text-sm font-bold text-white bg-green-500/20 px-2 py-1 rounded">--</span>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área Destacada</p>
+                        <span id="statBestArea" class="text-sm font-bold text-white bg-green-500/20 px-2 py-1 rounded border border-green-500/30">--</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área con Bajo Rendimiento</p>
-                        <span id="statWorstArea" class="text-sm font-bold text-gray-300 bg-red-500/20 px-2 py-1 rounded">--</span>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área a Mejorar</p>
+                        <span id="statWorstArea" class="text-sm font-bold text-gray-300 bg-red-500/20 px-2 py-1 rounded border border-red-500/30">--</span>
                     </div>
                 </div>
             </div>
-
             <div class="flex justify-between items-end mb-4">
                 <h3 class="font-bold text-gray-300">Historial Reciente</h3>
                 <button onclick="borrarHistorial()" class="text-[10px] text-red-400 uppercase tracking-wider hover:underline">Borrar Historial</button>
             </div>
             <div id="historyList" class="space-y-2"></div>
         </div>
+
+        <button id="fabBtn" onclick="toggleTaskCreator(true)" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-lg text-white text-3xl font-light flex items-center justify-center transition-transform active:scale-90 z-40 shadow-blue-900/50 pb-1">+</button>
+
     </div>
 
-    <footer class="mt-auto py-6 text-center opacity-60 hover:opacity-100 transition-opacity">
-        <div class="inline-flex items-center justify-center gap-2">
-            <div class="h-px w-8 bg-gradient-to-r from-transparent to-gray-500"></div>
-            <span class="text-xs font-medium tracking-widest text-gray-400">DESIGNED BY <span class="text-gray-200">ING. SAÚL BRICEÑO</span></span>
-            <div class="h-px w-8 bg-gradient-to-l from-transparent to-gray-500"></div>
+    <div id="taskCreatorModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
+        <div class="glass p-6 rounded-t-3xl shadow-2xl animate__animated animate__slideInUp w-full max-w-md mx-auto h-auto max-h-[85vh] overflow-y-auto no-scrollbar">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Nueva Tarea</h3>
+                <button onclick="toggleTaskCreator(false)" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center font-bold">✕</button>
+            </div>
+
+            <input id="taskInput" type="text" placeholder="¿Qué necesitas hacer?" class="w-full bg-transparent border-b border-gray-700 p-2 outline-none mb-6 text-xl text-white placeholder-gray-500 focus:border-blue-500 transition-colors">
+            
+            <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">MINUTOS (FOCO)</span>
+                    <input id="taskTime" type="number" min="1" max="120" value="25" class="bg-[#12121a] rounded-xl px-3 py-3 w-24 text-center text-blue-400 font-mono font-bold border border-gray-700 outline-none focus:border-blue-500">
+                </div>
+                <div class="flex flex-col flex-grow">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA (OPCIONAL)</span>
+                    <input id="taskDate" type="date" class="bg-[#12121a] rounded-xl px-3 py-3 w-full text-gray-300 text-sm border border-gray-700 outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="flex flex-col mb-8">
+                <span class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">ELIGE EL APARTADO</span>
+                <div id="contextButtons" class="flex flex-wrap gap-2"></div>
+            </div>
+
+            <button onclick="addTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95 transition-all">GUARDAR TAREA</button>
         </div>
-    </footer>
+    </div>
+
+    <div id="newContextModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-center items-center px-4">
+        <div class="glass p-6 rounded-3xl shadow-2xl animate__animated animate__zoomIn w-full max-w-sm">
+            <h3 class="text-lg font-bold text-white mb-4">Crear Nuevo Apartado</h3>
+            
+            <input id="newCtxName" type="text" placeholder="Nombre (ej. Auto, Tienda...)" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm mb-4">
+            
+            <div class="flex gap-4 mb-6">
+                <div class="flex-1">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-1 block">EMOJI</span>
+                    <input id="newCtxIcon" type="text" placeholder="🚗" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white text-center text-lg">
+                </div>
+                <div class="flex-1">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-1 block">COLOR</span>
+                    <input id="newCtxColor" type="color" value="#3b82f6" class="w-full h-[52px] bg-[#12121a] border border-gray-700 rounded-xl cursor-pointer p-1">
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeContextModal()" class="flex-1 py-3 rounded-xl border border-gray-600 text-gray-300 text-sm font-bold">Cancelar</button>
+                <button onclick="saveNewContext()" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold">Crear</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- BASE DE DATOS LOCAL ---
         let usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {};
         let activeUser = localStorage.getItem('focus_active_user') || null;
 
-        // Frases Motivacionales
+        // Frases Motivacionales limpias
         const quotes = [
-            { text: "No te midas por lo que lograste hoy, sino por la resistencia que mantuviste al intentarlo.", author: "Anónimo" },
-            { text: "El sueño es el mejor regulador de la atención. Duerme tus 8 horas para conquistar tu día.", author: "Matthew Walker" },
-            { text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día.", author: "Robert Collier" },
             { text: "No te midas por lo que lograste hoy, sino por la resistencia que mantuviste al intentarlo.", author: "Anónimo" },
             { text: "El sueño es el mejor regulador de la atención. Duerme tus 8 horas para conquistar tu día.", author: "Matthew Walker" },
             { text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día.", author: "Robert Collier" },
@@ -193,56 +215,17 @@
             { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo de Productividad" },
             { text: "La motivación nos impulsa a comenzar, pero el hábito nos permite continuar.", author: "Jim Ryun" },
             { text: "No esperes a que las condiciones sean perfectas para empezar. Empezar hace que las condiciones sean perfectas.", author: "Alan Cohen" },
-            { text: "El secreto para salir adelante es simplemente empezar.", author: "Mark Twain" },
-            { text: "No tienes que ser extremo, solo consistente.", author: "Anónimo" },
             { text: "El progreso, no la perfección, es lo que realmente importa.", author: "Anónimo" },
             { text: "Céntrate en ser productivo, no en estar ocupado.", author: "Tim Ferriss" },
             { text: "La disciplina es el puente entre las metas y los logros.", author: "Jim Rohn" },
-            { text: "Haz lo que puedas, con lo que tengas, donde estés.", author: "Theodore Roosevelt" },
-            { text: "No cuentes los días, haz que los días cuenten.", author: "Muhammad Ali" },
-            { text: "Tu futuro se crea por lo que haces hoy, no mañana.", author: "Robert Kiyosaki" },
-            { text: "No te ahogues en un vaso de agua, mejor bébetelo.", author: "Anónimo" },
             { text: "Si no puedes volar, corre; si no puedes correr, camina; si no puedes caminar, gatea.", author: "Martin Luther King Jr." },
             { text: "La energía fluye hacia donde va tu atención.", author: "Tony Robbins" },
             { text: "El descanso también es productivo. No eres una máquina.", author: "Anónimo" },
-            { text: "No mires el reloj; haz lo que él hace. Sigue adelante.", author: "Sam Levenson" },
             { text: "Una tarea a medias requiere la misma energía mental que una tarea terminada.", author: "Anónimo" },
-            { text: "A veces, el acto más productivo que puedes hacer es simplemente descansar.", author: "Mark Black" },
-            { text: "La excelencia no es un acto singular, sino un hábito.", author: "Aristóteles" },
-            { text: "El obstáculo es el camino. Lo que se interpone, te hace avanzar.", author: "Marco Aurelio" },
-            { text: "No se trata de 'tener' tiempo, se trata de 'hacer' tiempo.", author: "Anónimo" },
-            { text: "La simplicidad es la máxima sofisticación.", author: "Leonardo da Vinci" },
-            { text: "El fracaso es solo la oportunidad de comenzar de nuevo de forma más inteligente.", author: "Henry Ford" },
-            { text: "Lo único que se interpone entre tú y tu objetivo es la voluntad de intentarlo.", author: "Joel Brown" },
-            { text: "No necesitas ver toda la escalera, solo da el primer paso.", author: "Martin Luther King Jr." },
-            { text: "No digas que no tienes suficiente tiempo. Tienes exactamente las mismas horas que Albert Einstein.", author: "H. Jackson Brown Jr." },
-            { text: "El perfeccionismo es el peor enemigo de la productividad.", author: "Anónimo" },
-            { text: "La mejor manera de predecir tu futuro es creándolo hoy.", author: "Peter Drucker" },
-            { text: "Apunta a la luna. Incluso si fallas, aterrizarás entre las estrellas.", author: "W. Clement Stone" },
-            { text: "Lo que haces hoy puede mejorar todas tus mañanas.", author: "Ralph Marston" },
-            { text: "Si pasas demasiado tiempo pensando en una cosa, nunca la harás.", author: "Bruce Lee" },
-            { text: "La clave no es gastar el tiempo, sino invertirlo.", author: "Stephen R. Covey" },
-            { text: "Nada es particularmente difícil si lo divides en trabajos pequeños.", author: "Henry Ford" },
-            { text: "Solo aquellos que se atreven a tener grandes fracasos terminan consiguiendo grandes éxitos.", author: "Robert F. Kennedy" },
-            { text: "Nunca es demasiado tarde para ser lo que podrías haber sido.", author: "George Eliot" },
-            { text: "Toma el control de tu mente, o tu mente te controlará a ti.", author: "Anónimo" },
-            { text: "Cuando sientas que vas a rendirte, recuerda por qué empezaste.", author: "Anónimo" },
-            { text: "No te preocupes por los fracasos, preocúpate por las oportunidades que pierdes al no intentarlo.", author: "Jack Canfield" },
-            { text: "Si te cansas, aprende a descansar, no a renunciar.", author: "Banksy" },
-            { text: "Tu atención es tu recurso más valioso. Protégela ferozmente.", author: "Anónimo" },
-            { text: "Las grandes obras no son llevadas a cabo por la fuerza, sino por la perseverancia.", author: "Samuel Johnson" },
-            { text: "El orden en tu entorno refleja el orden en tu mente.", author: "Anónimo" },
-            { text: "Da siempre lo mejor de ti. Lo que plantes ahora, lo cosecharás más tarde.", author: "Og Mandino" },
-            { text: "Cada minuto que pasas planificando te ahorra 10 minutos de ejecución.", author: "Brian Tracy" },
-            { text: "Eres mucho más fuerte que tus distracciones.", author: "Anónimo" },
-            { text: "No busques el momento perfecto, busca el momento y hazlo perfecto.", author: "Anónimo" }
-            { text: "Haz una cosa a la vez. El cerebro no es multitarea, es un proyector de un solo lente.", author: "Dr. Edward Hallowell" },
-            { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo TDAH" },
-            { text: "La motivación nos impulsa a comenzar, pero el hábito nos permite continuar.", author: "Jim Ryun" },
-            { text: "No esperes a que las condiciones sean perfectas para empezar. Empezar hace que las condiciones sean perfectas.", author: "Alan Cohen" }
+            { text: "La clave no es gastar el tiempo, sino invertirlo.", author: "Stephen R. Covey" }
         ];
 
-        // --- NAVEGACIÓN LOGIN/REGISTRO ---
+        // --- FUNCIONES DE LOGIN Y REGISTRO ---
         function mostrarRegistro() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('registerScreen').classList.remove('hidden');
@@ -268,25 +251,22 @@
 
         function crearCuenta() {
             const user = document.getElementById('regUser').value.trim();
-            const name = document.getElementById('regName').value.trim();
             const gender = document.getElementById('regGender').value;
             const pass = document.getElementById('regPass').value;
             const passConf = document.getElementById('regPassConfirm').value;
 
-            if(!user || !name || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
-            if(usuariosDB[user]) return alert('Este usuario ya existe. Intenta iniciar sesión o usa otra credencial.');
-            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos mínimos de seguridad.');
+            if(!user || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
+            if(usuariosDB[user]) return alert('Este usuario ya existe. Intenta iniciar sesión.');
+            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos mínimos.');
             if(pass !== passConf) return alert('Las contraseñas no coinciden.');
 
-            // Guardar usuario estructurado
-            usuariosDB[user] = { pass: pass, name: name, gender: gender };
+            // Guardamos al usuario usando su username como nombre temporal
+            usuariosDB[user] = { pass: pass, name: user, gender: gender };
             localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
             
-            alert('¡Cuenta creada con éxito! Por favor inicia sesión.');
+            alert('¡Cuenta creada! Por favor inicia sesión.');
             
-            // Limpiar formulario y volver
             document.getElementById('regUser').value = '';
-            document.getElementById('regName').value = '';
             document.getElementById('regPass').value = '';
             document.getElementById('regPassConfirm').value = '';
             mostrarLogin();
@@ -297,7 +277,7 @@
             const pass = document.getElementById('loginPass').value.trim();
 
             if(!user || !pass) return alert('Ingresa usuario y contraseña.');
-            if(!usuariosDB[user]) return alert('Usuario incorrecto o no existe.');
+            if(!usuariosDB[user]) return alert('Usuario no encontrado.');
             if(usuariosDB[user].pass !== pass) return alert('Contraseña incorrecta.');
             
             activeUser = user;
@@ -317,16 +297,24 @@
             document.getElementById('loginPass').value = '';
         }
 
+        function editarNombre() {
+            const currentName = usuariosDB[activeUser].name;
+            const newName = prompt("¿Cómo quieres que te llame la app?", currentName);
+            if (newName && newName.trim() !== "") {
+                usuariosDB[activeUser].name = newName.trim();
+                localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+                document.getElementById('userGreeting').innerHTML = `Hola, <span class="font-bold text-white hover:text-blue-400 transition-colors">${newName.trim()}</span>`;
+            }
+        }
+
         function entrarAplicacion() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
-            // Configurar Saludo
             const uData = usuariosDB[activeUser];
-            document.getElementById('userGreeting').innerHTML = `Hola, <span class="font-bold text-white">${uData.name}</span>`;
+            document.getElementById('userGreeting').innerHTML = `Hola, <span class="font-bold text-white hover:text-blue-400 transition-colors">${uData.name}</span>`;
 
-            // Configurar Frase del día
             const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
             const daily = quotes[dayOfYear % quotes.length];
             document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
@@ -342,87 +330,147 @@
             entrarAplicacion();
         }
 
-        // --- SISTEMA PRINCIPAL (TAREAS Y ANALÍTICAS) ---
+        // --- SISTEMA DE TAREAS Y APARTADOS CON COLOR ---
         let tasks = JSON.parse(localStorage.getItem('tasks_v6')) || [];
         let historyTasks = JSON.parse(localStorage.getItem('history_v1')) || [];
-        let contexts = JSON.parse(localStorage.getItem('contexts_v1')) || [
-            { id: 'hogar', name: 'Hogar', icon: '🏠' },
-            { id: 'trabajo', name: 'Trabajo', icon: '💼' }
+        
+        // Nueva versión de apartados que incluye Color Hexadecimal
+        let contexts = JSON.parse(localStorage.getItem('contexts_v2')) || [
+            { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' },
+            { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' }
         ];
+
         let currentFilter = 'Todos';
         let selectedContext = contexts[0].id;
         let interval;
 
+        // Mostrar / Ocultar el creador de tareas
+        function toggleTaskCreator(show) {
+            const modal = document.getElementById('taskCreatorModal');
+            if(show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // Navegación entre Vistas
         function switchMainView(view) {
             const btnT = document.getElementById('navTasks');
             const btnS = document.getElementById('navStats');
             const vT = document.getElementById('viewTasks');
             const vS = document.getElementById('viewStats');
+            const fab = document.getElementById('fabBtn');
 
             if(view === 'tasks') {
                 btnT.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
                 btnS.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
                 vT.classList.remove('hidden');
                 vS.classList.add('hidden');
+                fab.classList.remove('hidden'); // Mostrar botón de tarea
             } else {
                 btnS.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
                 btnT.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
                 vS.classList.remove('hidden');
                 vT.classList.add('hidden');
+                fab.classList.add('hidden'); // Ocultar en estadísticas
                 actualizarAnaliticas();
             }
         }
 
         function renderTabs() {
             const container = document.getElementById('tabContainer');
-            container.innerHTML = `<button onclick="setFilter('Todos')" class="pb-2 transition-all text-sm ${currentFilter === 'Todos' ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}">Visión General</button>`;
+            container.innerHTML = `<button onclick="setFilter('Todos')" class="pb-2 transition-all text-sm ${currentFilter === 'Todos' ? 'border-b-2 border-white text-white font-bold' : 'text-gray-500 hover:text-gray-300'}">Visión General</button>`;
             contexts.forEach(ctx => {
                 const isActive = currentFilter === ctx.id;
-                container.innerHTML += `<button onclick="setFilter('${ctx.id}')" class="pb-2 transition-all text-sm ${isActive ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}">${ctx.icon} ${ctx.name}</button>`;
+                container.innerHTML += `<button onclick="setFilter('${ctx.id}')" style="${isActive ? `border-bottom: 2px solid ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : ''}" class="pb-2 transition-all text-sm ${!isActive ? 'text-gray-500 hover:text-gray-300' : ''}">${ctx.icon} ${ctx.name}</button>`;
             });
         }
 
+        // --- LÓGICA DE APARTADOS (CON COLORES) ---
         function renderContextButtons() {
             const container = document.getElementById('contextButtons');
             container.innerHTML = '';
             contexts.forEach(ctx => {
                 const isSelected = selectedContext === ctx.id;
-                const activeClasses = isSelected ? 'border-blue-500/50 bg-blue-500/20 text-blue-300' : 'border-gray-700 text-gray-400 opacity-60 hover:opacity-100';
-                container.innerHTML += `<button onclick="setContext('${ctx.id}')" class="px-3 py-1.5 rounded-xl border ${activeClasses} text-sm transition-all flex items-center gap-1">${ctx.icon} ${ctx.name}</button>`;
+                const hexColor = ctx.color || '#3b82f6';
+                
+                // Si está seleccionado, usamos su color personalizado
+                const style = isSelected 
+                    ? `background-color: ${hexColor}30; border-color: ${hexColor}; color: ${hexColor}; font-weight: bold;` 
+                    : `border-color: #374151; color: #9ca3af;`;
+                
+                container.innerHTML += `<button onclick="setContext('${ctx.id}')" style="${style}" class="px-3 py-1.5 rounded-xl border text-sm transition-all flex items-center gap-1">${ctx.icon} ${ctx.name}</button>`;
             });
-            container.innerHTML += `<button onclick="addNewContext()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-600 text-gray-500 text-sm hover:border-blue-400 hover:text-blue-400 transition-all flex items-center">+ Nuevo</button>`;
+            container.innerHTML += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-600 text-gray-500 text-sm hover:border-white hover:text-white transition-all flex items-center">+ Nuevo</button>`;
         }
 
-        function setContext(id) { selectedContext = id; renderContextButtons(); }
+        function setContext(id) { 
+            selectedContext = id; 
+            renderContextButtons(); 
+        }
 
-        function addNewContext() {
-            const name = prompt("¿Cómo se llamará el nuevo apartado?");
-            if (!name || name.trim() === "") return;
-            const icon = prompt("Escribe un emoji para identificarlo:") || "📌";
+        function openContextModal() {
+            document.getElementById('newContextModal').classList.remove('hidden');
+            document.getElementById('newContextModal').classList.add('flex');
+        }
+
+        function closeContextModal() {
+            document.getElementById('newContextModal').classList.add('hidden');
+            document.getElementById('newContextModal').classList.remove('flex');
+            document.getElementById('newCtxName').value = '';
+            document.getElementById('newCtxIcon').value = '';
+        }
+
+        function saveNewContext() {
+            const name = document.getElementById('newCtxName').value.trim();
+            const icon = document.getElementById('newCtxIcon').value.trim() || '📌';
+            const color = document.getElementById('newCtxColor').value;
+            
+            if(!name) return alert("Ponle un nombre al apartado.");
+            
             const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            contexts.push({ id: newId, name: name.trim(), icon: icon.trim() });
-            localStorage.setItem('contexts_v1', JSON.stringify(contexts));
+            contexts.push({ id: newId, name: name, icon: icon, color: color });
+            localStorage.setItem('contexts_v2', JSON.stringify(contexts));
+            
             setContext(newId);
             renderTabs();
+            closeContextModal();
         }
 
+        // --- LÓGICA PRINCIPAL DE TAREAS ---
         function renderTasks() {
             const container = document.getElementById('taskList');
+            const emptyState = document.getElementById('emptyState');
             container.innerHTML = '';
+            
             let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
+            
+            if(filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
             const today = new Date().toISOString().split('T')[0];
 
             filtered.forEach((t) => {
                 const globalIndex = tasks.indexOf(t);
                 const mins = Math.floor(t.timeLeft / 60);
                 const secs = t.timeLeft % 60;
-                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Desconocido', icon: '❓' };
+                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Desconocido', icon: '❓', color: '#6b7280' };
+                const cColor = taskContext.color;
                 
                 let dateBadge = '';
                 if (t.date) {
                     const isOverdueOrToday = t.date <= today;
-                    const badgeColor = isOverdueOrToday ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-gray-800 text-gray-400 border-gray-700';
-                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeColor} flex items-center gap-1">${isOverdueOrToday ? '⚠️' : '📅'} ${t.date}</span>`;
+                    const badgeClass = isOverdueOrToday ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-[#12121a] text-gray-400 border-gray-700';
+                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeClass} flex items-center gap-1">${isOverdueOrToday ? '⚠️' : '📅'} ${t.date}</span>`;
                 }
 
                 const div = document.createElement('div');
@@ -430,8 +478,8 @@
                 div.innerHTML = `
                     <div class="flex justify-between items-start gap-3">
                         <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1.5">
-                                <span class="text-xs opacity-80">${taskContext.icon} <span class="text-[10px] uppercase text-gray-400">${taskContext.name}</span></span>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-[10px] px-2 py-0.5 rounded-md border font-bold flex items-center gap-1" style="background-color: ${cColor}20; border-color: ${cColor}50; color: ${cColor};">${taskContext.icon} ${taskContext.name.toUpperCase()}</span>
                                 ${dateBadge}
                             </div>
                             <p class="text-base font-medium leading-snug text-gray-100">${t.text}</p>
@@ -444,7 +492,7 @@
                         <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-colors text-xs font-semibold tracking-wide text-gray-300">
                             ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
                         </button>
-                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-lg active:scale-95 transition-transform">HECHO ✓</button>
+                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-transform" style="background-color: ${cColor}">HECHO ✓</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -457,12 +505,20 @@
             const dateInput = document.getElementById('taskDate');
             let mins = parseInt(timeInput.value) || 25;
             if (mins > 120) mins = 120;
-            if (input.value.trim() === '') return;
+            if (input.value.trim() === '') return alert("Describe tu tarea primero.");
 
-            tasks.push({ text: input.value, contextId: selectedContext, timeLeft: mins * 60, isRunning: false, date: dateInput.value || null });
+            tasks.push({ 
+                text: input.value, 
+                contextId: selectedContext, 
+                timeLeft: mins * 60, 
+                isRunning: false, 
+                date: dateInput.value || null // La fecha no es obligatoria
+            });
+            
             saveAndRender();
             input.value = '';
             dateInput.value = '';
+            toggleTaskCreator(false); // Cerramos el panel después de guardar
         }
 
         function setFilter(filter) {
@@ -491,7 +547,6 @@
         }
 
         function completeTask(index) {
-            // Guardar en historial antes de borrar
             const completed = tasks[index];
             historyTasks.push({ text: completed.text, contextId: completed.contextId, completedAt: new Date().toISOString() });
             localStorage.setItem('history_v1', JSON.stringify(historyTasks));
@@ -511,7 +566,6 @@
 
         function actualizarAnaliticas() {
             document.getElementById('statTotal').innerText = historyTasks.length;
-
             const cList = document.getElementById('historyList');
             cList.innerHTML = '';
             
@@ -523,29 +577,22 @@
                 return;
             }
 
-            // Procesar analíticas
             let hoursCount = {};
             let contextCount = {};
             
-            historyTasks.slice().reverse().forEach(t => { // Mostrar los más recientes primero
-                // Renderizar lista
+            historyTasks.slice().reverse().forEach(t => {
                 const d = new Date(t.completedAt);
-                const ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌' };
-                cList.innerHTML += `<div class="bg-white/5 p-3 rounded-xl flex justify-between items-center"><div class="flex items-center gap-2"><span class="opacity-60">${ctx.icon}</span><p class="text-sm text-gray-300 line-through">${t.text}</p></div><span class="text-[10px] text-gray-500">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
+                const ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌', color: '#6b7280' };
+                cList.innerHTML += `<div class="bg-white/5 p-3 rounded-xl flex justify-between items-center"><div class="flex items-center gap-2"><span class="opacity-60" style="color: ${ctx.color}">${ctx.icon}</span><p class="text-sm text-gray-300 line-through">${t.text}</p></div><span class="text-[10px] text-gray-500">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
                 
-                // Contar horas
                 const hour = d.getHours();
                 hoursCount[hour] = (hoursCount[hour] || 0) + 1;
-                
-                // Contar contextos
                 contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
             });
 
-            // Calcular Mejor hora
             let bestHour = Object.keys(hoursCount).reduce((a, b) => hoursCount[a] > hoursCount[b] ? a : b);
             document.getElementById('statBestHour').innerText = `${bestHour}:00`;
 
-            // Calcular áreas
             let bestCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] > contextCount[b] ? a : b);
             let worstCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] < contextCount[b] ? a : b);
             
@@ -553,6 +600,8 @@
             const worstCtxObj = contexts.find(c => c.id === worstCtxId);
 
             document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
+            document.getElementById('statBestArea').style.color = bestCtxObj ? bestCtxObj.color : '#fff';
+            
             document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
         }
 
@@ -563,4 +612,3 @@
     </script>
 </body>
 </html>
-

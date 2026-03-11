@@ -23,19 +23,21 @@
         ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .req-pass { color: #10b981; }
+        .req-fail { color: #6b7280; }
     </style>
 </head>
 <body class="p-4 flex flex-col min-h-screen">
 
     <div id="loginScreen" class="max-w-md mx-auto w-full flex-grow flex flex-col justify-center animate__animated animate__fadeIn">
-        <div class="text-center mb-10">
+        <div class="text-center mb-8">
             <img src="icon.png" alt="Focus Flow Logo" class="w-24 h-24 mx-auto mb-4 rounded-3xl shadow-lg shadow-blue-500/20">
-            <h1 class="text-5xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-sm mb-3">Focus Flow</h1>
-            <p class="text-gray-400 text-sm">Ingresa tus datos o crea una cuenta</p>
+            <h1 class="text-5xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-sm mb-2">Focus Flow</h1>
+            <p class="text-gray-400 text-sm">Bienvenido de nuevo</p>
         </div>
 
         <div class="glass p-8 rounded-3xl shadow-2xl">
-            <input id="loginUser" type="text" placeholder="Usuario" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-4 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
+            <input id="loginUser" type="text" placeholder="Usuario (Credencial)" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-4 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
             <input id="loginPass" type="password" placeholder="Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-4 outline-none mb-4 text-white focus:border-blue-500 transition-colors">
             
             <div class="flex items-center gap-3 mb-8">
@@ -43,47 +45,127 @@
                 <label for="keepLogged" class="text-sm text-gray-300">Mantener sesión iniciada</label>
             </div>
 
-            <div class="flex flex-col gap-4">
-                <button onclick="iniciarSesion()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95">INICIAR SESIÓN</button>
-                <button onclick="crearCuenta()" class="w-full py-3 rounded-2xl bg-transparent border border-blue-600/50 text-blue-400 hover:bg-blue-600/10 font-bold tracking-widest transition-all transform active:scale-95 text-sm">CREAR NUEVA CUENTA</button>
+            <button onclick="iniciarSesion()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95 mb-4">INICIAR SESIÓN</button>
+            <p class="text-center text-sm text-gray-400">¿No tienes cuenta? <button onclick="mostrarRegistro()" class="text-blue-400 font-bold hover:underline">Regístrate aquí</button></p>
+        </div>
+    </div>
+
+    <div id="registerScreen" class="max-w-md mx-auto w-full flex-grow flex flex-col justify-center animate__animated animate__fadeIn hidden">
+        <div class="text-center mb-6">
+            <h2 class="text-3xl font-black text-white mb-2">Crear Cuenta</h2>
+            <p class="text-gray-400 text-xs">Configura tu espacio personal</p>
+        </div>
+
+        <div class="glass p-6 rounded-3xl shadow-2xl space-y-4">
+            <div>
+                <input id="regUser" type="text" placeholder="Usuario" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
+                <p class="text-[10px] text-gray-500 mt-1 ml-1">⚠️ Este usuario es tu credencial, solo sirve para iniciar sesión.</p>
             </div>
+            
+            <input id="regName" type="text" placeholder="Nombre a mostrar en la app" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
+            
+            <select id="regGender" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-gray-300 focus:border-blue-500 text-sm">
+                <option value="" disabled selected>Selecciona tu género...</option>
+                <option value="Hombre">Hombre</option>
+                <option value="Mujer">Mujer</option>
+                <option value="No binario">No binario</option>
+            </select>
+
+            <div>
+                <input id="regPass" type="password" onkeyup="validarPassword()" placeholder="Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm mb-2">
+                
+                <div class="text-xs bg-black/40 p-3 rounded-lg space-y-1 mb-2">
+                    <p id="reqLen" class="req-fail">○ Mínimo 8 caracteres</p>
+                    <p id="reqCap" class="req-fail">○ Al menos 1 mayúscula</p>
+                    <p id="reqNum" class="req-fail">○ Al menos 1 número</p>
+                </div>
+
+                <input id="regPassConfirm" type="password" placeholder="Confirmar Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
+            </div>
+
+            <button onclick="crearCuenta()" class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold tracking-widest shadow-lg mt-4 transition-all transform active:scale-95">REGISTRARSE</button>
+            <p class="text-center text-sm text-gray-400 mt-4">¿Ya tienes cuenta? <button onclick="mostrarLogin()" class="text-blue-400 font-bold hover:underline">Inicia sesión</button></p>
         </div>
     </div>
 
     <div id="mainApp" class="max-w-md mx-auto w-full flex-grow hidden animate__animated animate__fadeIn">
-        <header class="mb-6 mt-2 text-center relative">
-            <h1 class="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent drop-shadow-sm">Focus Flow</h1>
-            <p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 mt-1">Productividad Inteligente</p>
+        
+        <header class="mb-6 mt-2 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Focus Flow</h1>
+                <p id="userGreeting" class="text-xs text-gray-400 mt-1">Hola, <span class="font-bold text-white">Usuario</span></p>
+            </div>
+            <button onclick="cerrarSesion()" class="text-xs text-red-400 border border-red-500/30 px-3 py-1 rounded-lg hover:bg-red-500/10">Salir</button>
         </header>
 
-        <div id="tabContainer" class="flex overflow-x-auto no-scrollbar mb-6 border-b border-gray-800/50 px-2 gap-4 whitespace-nowrap pb-1">
-            </div>
-
-        <div class="glass p-6 rounded-3xl mb-8 shadow-2xl">
-            <input id="taskInput" type="text" placeholder="Nueva tarea..." class="w-full bg-transparent border-b border-gray-700 p-2 outline-none mb-6 text-xl text-white placeholder-gray-600 focus:border-blue-500 transition-colors">
-            
-            <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
-                <div class="flex flex-col">
-                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">TIEMPO (MIN)</span>
-                    <input id="taskTime" type="number" min="1" max="120" value="25" class="bg-black/40 rounded-xl px-3 py-2 w-20 text-center text-blue-400 font-mono font-bold border border-gray-800 outline-none focus:border-blue-500">
-                </div>
-                
-                <div class="flex flex-col flex-grow">
-                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA (OPCIONAL)</span>
-                    <input id="taskDate" type="date" class="bg-black/40 rounded-xl px-3 py-2 w-full text-gray-300 text-sm border border-gray-800 outline-none focus:border-blue-500">
-                </div>
-            </div>
-
-            <div class="flex flex-col mb-6">
-                <span class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">APARTADO</span>
-                <div id="contextButtons" class="flex flex-wrap gap-2">
-                    </div>
-            </div>
-
-            <button onclick="addTask()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95">AGREGAR TAREA</button>
+        <div class="glass-card p-4 rounded-2xl mb-6 border-l-4 border-l-blue-500">
+            <p id="dailyQuote" class="text-sm italic text-gray-200 mb-1">"Cargando inspiración..."</p>
+            <p id="dailyAuthor" class="text-[10px] text-right text-gray-500 uppercase font-bold">- Autor</p>
         </div>
 
-        <div id="taskList" class="space-y-4 pb-10"></div>
+        <div class="flex bg-black/40 rounded-xl p-1 mb-6">
+            <button id="navTasks" onclick="switchMainView('tasks')" class="flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all">Mis Tareas</button>
+            <button id="navStats" onclick="switchMainView('stats')" class="flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all">Mi Progreso</button>
+        </div>
+
+        <div id="viewTasks">
+            <div id="tabContainer" class="flex overflow-x-auto no-scrollbar mb-6 border-b border-gray-800/50 px-2 gap-4 whitespace-nowrap pb-1"></div>
+
+            <div class="glass p-6 rounded-3xl mb-8 shadow-2xl">
+                <input id="taskInput" type="text" placeholder="Nueva tarea..." class="w-full bg-transparent border-b border-gray-700 p-2 outline-none mb-6 text-lg text-white placeholder-gray-600 focus:border-blue-500 transition-colors">
+                
+                <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">MINUTOS</span>
+                        <input id="taskTime" type="number" min="1" max="120" value="25" class="bg-black/40 rounded-xl px-3 py-2 w-20 text-center text-blue-400 font-mono font-bold border border-gray-800 outline-none focus:border-blue-500">
+                    </div>
+                    <div class="flex flex-col flex-grow">
+                        <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA</span>
+                        <input id="taskDate" type="date" class="bg-black/40 rounded-xl px-3 py-2 w-full text-gray-300 text-sm border border-gray-800 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex flex-col mb-6">
+                    <span class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">APARTADO</span>
+                    <div id="contextButtons" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <button onclick="addTask()" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95 transition-all">AGREGAR TAREA</button>
+            </div>
+
+            <div id="taskList" class="space-y-4 pb-10"></div>
+        </div>
+
+        <div id="viewStats" class="hidden pb-10">
+            <h2 class="text-xl font-bold mb-4 text-blue-400">Analíticas de Productividad</h2>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="glass-card p-4 rounded-2xl text-center">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Mejor Hora</p>
+                    <p id="statBestHour" class="text-2xl font-black text-emerald-400">--:--</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl text-center">
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Total Hechas</p>
+                    <p id="statTotal" class="text-2xl font-black text-blue-400">0</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl text-center col-span-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área de Mayor Rendimiento</p>
+                        <span id="statBestArea" class="text-sm font-bold text-white bg-green-500/20 px-2 py-1 rounded">--</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área con Bajo Rendimiento</p>
+                        <span id="statWorstArea" class="text-sm font-bold text-gray-300 bg-red-500/20 px-2 py-1 rounded">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-end mb-4">
+                <h3 class="font-bold text-gray-300">Historial Reciente</h3>
+                <button onclick="borrarHistorial()" class="text-[10px] text-red-400 uppercase tracking-wider hover:underline">Borrar Historial</button>
+            </div>
+            <div id="historyList" class="space-y-2"></div>
+        </div>
     </div>
 
     <footer class="mt-auto py-6 text-center opacity-60 hover:opacity-100 transition-opacity">
@@ -95,80 +177,124 @@
     </footer>
 
     <script>
-        // --- 1. LÓGICA DE LOGIN ---
-        
-        // Cargamos los usuarios guardados en el teléfono (si no hay, creamos una lista vacía)
+        // --- BASE DE DATOS LOCAL ---
         let usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {};
+        let activeUser = localStorage.getItem('focus_active_user') || null;
+
+        // Frases Motivacionales
+        const quotes = [
+            { text: "No te midas por lo que lograste hoy, sino por la resistencia que mantuviste al intentarlo.", author: "Anónimo" },
+            { text: "El sueño es el mejor regulador de la atención. Duerme tus 8 horas para conquistar tu día.", author: "Matthew Walker" },
+            { text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día.", author: "Robert Collier" },
+            { text: "Haz una cosa a la vez. El cerebro no es multitarea, es un proyector de un solo lente.", author: "Dr. Edward Hallowell" },
+            { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo TDAH" },
+            { text: "La motivación nos impulsa a comenzar, pero el hábito nos permite continuar.", author: "Jim Ryun" },
+            { text: "No esperes a que las condiciones sean perfectas para empezar. Empezar hace que las condiciones sean perfectas.", author: "Alan Cohen" }
+        ];
+
+        // --- NAVEGACIÓN LOGIN/REGISTRO ---
+        function mostrarRegistro() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.remove('hidden');
+        }
+
+        function mostrarLogin() {
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        function validarPassword() {
+            const p = document.getElementById('regPass').value;
+            const reqLen = document.getElementById('reqLen');
+            const reqCap = document.getElementById('reqCap');
+            const reqNum = document.getElementById('reqNum');
+
+            p.length >= 8 ? (reqLen.className = "req-pass", reqLen.innerText = "✓ Mínimo 8 caracteres") : (reqLen.className = "req-fail", reqLen.innerText = "○ Mínimo 8 caracteres");
+            /[A-Z]/.test(p) ? (reqCap.className = "req-pass", reqCap.innerText = "✓ Al menos 1 mayúscula") : (reqCap.className = "req-fail", reqCap.innerText = "○ Al menos 1 mayúscula");
+            /[0-9]/.test(p) ? (reqNum.className = "req-pass", reqNum.innerText = "✓ Al menos 1 número") : (reqNum.className = "req-fail", reqNum.innerText = "○ Al menos 1 número");
+            
+            return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p);
+        }
 
         function crearCuenta() {
-            const user = document.getElementById('loginUser').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
+            const user = document.getElementById('regUser').value.trim();
+            const name = document.getElementById('regName').value.trim();
+            const gender = document.getElementById('regGender').value;
+            const pass = document.getElementById('regPass').value;
+            const passConf = document.getElementById('regPassConfirm').value;
 
-            if(user === '' || pass === '') {
-                alert('Por favor, llena ambos campos para crear tu cuenta.');
-                return;
-            }
+            if(!user || !name || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
+            if(usuariosDB[user]) return alert('Este usuario ya existe. Intenta iniciar sesión o usa otra credencial.');
+            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos mínimos de seguridad.');
+            if(pass !== passConf) return alert('Las contraseñas no coinciden.');
 
-            if(usuariosDB[user]) {
-                alert('Ese usuario ya existe. Si es tuyo, intenta iniciar sesión.');
-                return;
-            }
-
-            // Guardamos el usuario nuevo
-            usuariosDB[user] = pass;
+            // Guardar usuario estructurado
+            usuariosDB[user] = { pass: pass, name: name, gender: gender };
             localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
-            alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.');
             
-            // Limpiamos la contraseña por seguridad
-            document.getElementById('loginPass').value = '';
+            alert('¡Cuenta creada con éxito! Por favor inicia sesión.');
+            
+            // Limpiar formulario y volver
+            document.getElementById('regUser').value = '';
+            document.getElementById('regName').value = '';
+            document.getElementById('regPass').value = '';
+            document.getElementById('regPassConfirm').value = '';
+            mostrarLogin();
         }
 
         function iniciarSesion() {
             const user = document.getElementById('loginUser').value.trim();
             const pass = document.getElementById('loginPass').value.trim();
 
-            if(user === '' || pass === '') {
-                alert('Por favor, ingresa tu usuario y contraseña.');
-                return;
-            }
-
-            // Comprobamos si el usuario existe en nuestra "base de datos"
-            if(!usuariosDB[user]) {
-                alert('El usuario no existe. Por favor, crea una cuenta primero.');
-                return;
-            }
-
-            // Comprobamos que la contraseña sea correcta
-            if(usuariosDB[user] !== pass) {
-                alert('Contraseña incorrecta.');
-                return;
-            }
+            if(!user || !pass) return alert('Ingresa usuario y contraseña.');
+            if(!usuariosDB[user]) return alert('Usuario incorrecto o no existe.');
+            if(usuariosDB[user].pass !== pass) return alert('Contraseña incorrecta.');
             
-            // Si todo está bien, lo dejamos entrar
+            activeUser = user;
+            if(document.getElementById('keepLogged').checked) {
+                localStorage.setItem('focus_user_logged', 'true');
+                localStorage.setItem('focus_active_user', activeUser);
+            }
             entrarAplicacion();
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('focus_user_logged');
+            localStorage.removeItem('focus_active_user');
+            activeUser = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginPass').value = '';
         }
 
         function entrarAplicacion() {
             document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
-            if(document.getElementById('keepLogged').checked) {
-                localStorage.setItem('focus_user_logged', 'true');
-            }
+            // Configurar Saludo
+            const uData = usuariosDB[activeUser];
+            document.getElementById('userGreeting').innerHTML = `Hola, <span class="font-bold text-white">${uData.name}</span>`;
+
+            // Configurar Frase del día
+            const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+            const daily = quotes[dayOfYear % quotes.length];
+            document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
+            document.getElementById('dailyAuthor').innerText = `- ${daily.author}`;
             
             renderTabs();
             renderContextButtons();
             renderTasks();
+            actualizarAnaliticas();
         }
 
-        // Si ya tenía la sesión guardada de antes
-        if(localStorage.getItem('focus_user_logged') === 'true') {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
+        if(localStorage.getItem('focus_user_logged') === 'true' && activeUser) {
+            entrarAplicacion();
         }
 
-        // --- 2. LÓGICA DE TAREAS ---
+        // --- SISTEMA PRINCIPAL (TAREAS Y ANALÍTICAS) ---
         let tasks = JSON.parse(localStorage.getItem('tasks_v6')) || [];
+        let historyTasks = JSON.parse(localStorage.getItem('history_v1')) || [];
         let contexts = JSON.parse(localStorage.getItem('contexts_v1')) || [
             { id: 'hogar', name: 'Hogar', icon: '🏠' },
             { id: 'trabajo', name: 'Trabajo', icon: '💼' }
@@ -177,10 +303,29 @@
         let selectedContext = contexts[0].id;
         let interval;
 
+        function switchMainView(view) {
+            const btnT = document.getElementById('navTasks');
+            const btnS = document.getElementById('navStats');
+            const vT = document.getElementById('viewTasks');
+            const vS = document.getElementById('viewStats');
+
+            if(view === 'tasks') {
+                btnT.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
+                btnS.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
+                vT.classList.remove('hidden');
+                vS.classList.add('hidden');
+            } else {
+                btnS.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
+                btnT.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
+                vS.classList.remove('hidden');
+                vT.classList.add('hidden');
+                actualizarAnaliticas();
+            }
+        }
+
         function renderTabs() {
             const container = document.getElementById('tabContainer');
             container.innerHTML = `<button onclick="setFilter('Todos')" class="pb-2 transition-all text-sm ${currentFilter === 'Todos' ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}">Visión General</button>`;
-            
             contexts.forEach(ctx => {
                 const isActive = currentFilter === ctx.id;
                 container.innerHTML += `<button onclick="setFilter('${ctx.id}')" class="pb-2 transition-all text-sm ${isActive ? 'tab-active' : 'text-gray-500 hover:text-gray-300'}">${ctx.icon} ${ctx.name}</button>`;
@@ -190,27 +335,21 @@
         function renderContextButtons() {
             const container = document.getElementById('contextButtons');
             container.innerHTML = '';
-            
             contexts.forEach(ctx => {
                 const isSelected = selectedContext === ctx.id;
                 const activeClasses = isSelected ? 'border-blue-500/50 bg-blue-500/20 text-blue-300' : 'border-gray-700 text-gray-400 opacity-60 hover:opacity-100';
                 container.innerHTML += `<button onclick="setContext('${ctx.id}')" class="px-3 py-1.5 rounded-xl border ${activeClasses} text-sm transition-all flex items-center gap-1">${ctx.icon} ${ctx.name}</button>`;
             });
-
             container.innerHTML += `<button onclick="addNewContext()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-600 text-gray-500 text-sm hover:border-blue-400 hover:text-blue-400 transition-all flex items-center">+ Nuevo</button>`;
         }
 
-        function setContext(id) {
-            selectedContext = id;
-            renderContextButtons();
-        }
+        function setContext(id) { selectedContext = id; renderContextButtons(); }
 
         function addNewContext() {
             const name = prompt("¿Cómo se llamará el nuevo apartado?");
             if (!name || name.trim() === "") return;
             const icon = prompt("Escribe un emoji para identificarlo:") || "📌";
             const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            
             contexts.push({ id: newId, name: name.trim(), icon: icon.trim() });
             localStorage.setItem('contexts_v1', JSON.stringify(contexts));
             setContext(newId);
@@ -233,8 +372,7 @@
                 if (t.date) {
                     const isOverdueOrToday = t.date <= today;
                     const badgeColor = isOverdueOrToday ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-gray-800 text-gray-400 border-gray-700';
-                    const icon = isOverdueOrToday ? '⚠️' : '📅';
-                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeColor} flex items-center gap-1">${icon} ${t.date}</span>`;
+                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeColor} flex items-center gap-1">${isOverdueOrToday ? '⚠️' : '📅'} ${t.date}</span>`;
                 }
 
                 const div = document.createElement('div');
@@ -256,7 +394,7 @@
                         <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-colors text-xs font-semibold tracking-wide text-gray-300">
                             ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
                         </button>
-                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-lg transition-transform active:scale-95">HECHO ✓</button>
+                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-xs font-bold text-white shadow-lg active:scale-95 transition-transform">HECHO ✓</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -303,19 +441,73 @@
         }
 
         function completeTask(index) {
+            // Guardar en historial antes de borrar
+            const completed = tasks[index];
+            historyTasks.push({ text: completed.text, contextId: completed.contextId, completedAt: new Date().toISOString() });
+            localStorage.setItem('history_v1', JSON.stringify(historyTasks));
+
             tasks.splice(index, 1);
             clearInterval(interval);
             saveAndRender();
         }
 
-        function saveAndRender() {
-            localStorage.setItem('tasks_v6', JSON.stringify(tasks));
-            renderTasks();
+        function borrarHistorial() {
+            if(confirm("¿Seguro que quieres borrar todas tus analíticas y tareas terminadas?")) {
+                historyTasks = [];
+                localStorage.setItem('history_v1', JSON.stringify(historyTasks));
+                actualizarAnaliticas();
+            }
         }
 
-        if(localStorage.getItem('focus_user_logged') === 'true') {
-            renderTabs();
-            renderContextButtons();
+        function actualizarAnaliticas() {
+            document.getElementById('statTotal').innerText = historyTasks.length;
+
+            const cList = document.getElementById('historyList');
+            cList.innerHTML = '';
+            
+            if(historyTasks.length === 0) {
+                cList.innerHTML = '<p class="text-sm text-gray-500 italic">Aún no hay tareas completadas.</p>';
+                document.getElementById('statBestHour').innerText = "--:--";
+                document.getElementById('statBestArea').innerText = "--";
+                document.getElementById('statWorstArea').innerText = "--";
+                return;
+            }
+
+            // Procesar analíticas
+            let hoursCount = {};
+            let contextCount = {};
+            
+            historyTasks.slice().reverse().forEach(t => { // Mostrar los más recientes primero
+                // Renderizar lista
+                const d = new Date(t.completedAt);
+                const ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌' };
+                cList.innerHTML += `<div class="bg-white/5 p-3 rounded-xl flex justify-between items-center"><div class="flex items-center gap-2"><span class="opacity-60">${ctx.icon}</span><p class="text-sm text-gray-300 line-through">${t.text}</p></div><span class="text-[10px] text-gray-500">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
+                
+                // Contar horas
+                const hour = d.getHours();
+                hoursCount[hour] = (hoursCount[hour] || 0) + 1;
+                
+                // Contar contextos
+                contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
+            });
+
+            // Calcular Mejor hora
+            let bestHour = Object.keys(hoursCount).reduce((a, b) => hoursCount[a] > hoursCount[b] ? a : b);
+            document.getElementById('statBestHour').innerText = `${bestHour}:00`;
+
+            // Calcular áreas
+            let bestCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] > contextCount[b] ? a : b);
+            let worstCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] < contextCount[b] ? a : b);
+            
+            const bestCtxObj = contexts.find(c => c.id === bestCtxId);
+            const worstCtxObj = contexts.find(c => c.id === worstCtxId);
+
+            document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
+            document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('tasks_v6', JSON.stringify(tasks));
             renderTasks();
         }
     </script>

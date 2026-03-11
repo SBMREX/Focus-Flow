@@ -29,6 +29,7 @@
 
     <div id="loginScreen" class="max-w-md mx-auto w-full flex-grow flex flex-col justify-center animate__animated animate__fadeIn">
         <div class="text-center mb-10">
+            <img src="icon.png" alt="Focus Flow Logo" class="w-24 h-24 mx-auto mb-4 rounded-3xl shadow-lg shadow-blue-500/20">
             <h1 class="text-5xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-sm mb-3">Focus Flow</h1>
             <p class="text-gray-400 text-sm">Ingresa tus datos o crea una cuenta</p>
         </div>
@@ -42,7 +43,10 @@
                 <label for="keepLogged" class="text-sm text-gray-300">Mantener sesión iniciada</label>
             </div>
 
-            <button onclick="iniciarSesion()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95">ENTRAR / CREAR</button>
+            <div class="flex flex-col gap-4">
+                <button onclick="iniciarSesion()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95">INICIAR SESIÓN</button>
+                <button onclick="crearCuenta()" class="w-full py-3 rounded-2xl bg-transparent border border-blue-600/50 text-blue-400 hover:bg-blue-600/10 font-bold tracking-widest transition-all transform active:scale-95 text-sm">CREAR NUEVA CUENTA</button>
+            </div>
         </div>
     </div>
 
@@ -92,12 +96,59 @@
 
     <script>
         // --- 1. LÓGICA DE LOGIN ---
-        function iniciarSesion() {
-            const user = document.getElementById('loginUser').value;
-            if(user.trim() === '') {
-                alert('Por favor ingresa un usuario');
+        
+        // Cargamos los usuarios guardados en el teléfono (si no hay, creamos una lista vacía)
+        let usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {};
+
+        function crearCuenta() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if(user === '' || pass === '') {
+                alert('Por favor, llena ambos campos para crear tu cuenta.');
                 return;
             }
+
+            if(usuariosDB[user]) {
+                alert('Ese usuario ya existe. Si es tuyo, intenta iniciar sesión.');
+                return;
+            }
+
+            // Guardamos el usuario nuevo
+            usuariosDB[user] = pass;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            alert('¡Cuenta creada con éxito! Ahora puedes iniciar sesión.');
+            
+            // Limpiamos la contraseña por seguridad
+            document.getElementById('loginPass').value = '';
+        }
+
+        function iniciarSesion() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if(user === '' || pass === '') {
+                alert('Por favor, ingresa tu usuario y contraseña.');
+                return;
+            }
+
+            // Comprobamos si el usuario existe en nuestra "base de datos"
+            if(!usuariosDB[user]) {
+                alert('El usuario no existe. Por favor, crea una cuenta primero.');
+                return;
+            }
+
+            // Comprobamos que la contraseña sea correcta
+            if(usuariosDB[user] !== pass) {
+                alert('Contraseña incorrecta.');
+                return;
+            }
+            
+            // Si todo está bien, lo dejamos entrar
+            entrarAplicacion();
+        }
+
+        function entrarAplicacion() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
@@ -110,6 +161,7 @@
             renderTasks();
         }
 
+        // Si ya tenía la sesión guardada de antes
         if(localStorage.getItem('focus_user_logged') === 'true') {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
@@ -269,4 +321,3 @@
     </script>
 </body>
 </html>
-

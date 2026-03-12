@@ -39,7 +39,7 @@
         body.light-mode .bg-\[\#12121a\] { background-color: #ffffff !important; }
         
         /* CORRECCIÓN DE FRASES EN MODO CLARO */
-        body.light-mode #dailyQuote { color: #1f2937 !important; font-weight: 500; }
+        body.light-mode #dailyQuote { color: #1f2937 !important; font-weight: 600; }
         body.light-mode #dailyAuthor { color: #6b7280 !important; }
     </style>
 </head>
@@ -47,7 +47,7 @@
 
     <div id="loginScreen" class="max-w-md mx-auto w-full flex-grow flex flex-col justify-center animate__animated animate__fadeIn">
         <div class="text-center mb-8">
-            <img src="icon.png" alt="Focus Flow Logo" class="w-24 h-24 mx-auto mb-4 rounded-3xl shadow-lg shadow-blue-500/20">
+            <img src="icon.png" alt="Focus Flow Logo" class="w-24 h-24 mx-auto mb-4 rounded-3xl shadow-lg shadow-blue-500/20" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3233/3233499.png'">
             <h1 class="text-5xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-sm mb-2">Focus Flow</h1>
             <p data-i18n="welcome" class="text-gray-400 text-sm">Bienvenido de nuevo</p>
         </div>
@@ -101,7 +101,7 @@
         
         <header class="mb-6 mt-2 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <img id="headerAvatar" src="icon.png" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/20">
+                <img id="headerAvatar" src="icon.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/20">
                 <div>
                     <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent leading-none">Focus Flow</h1>
                     <p id="userGreeting" class="text-xs text-gray-400 mt-1">Hola, <span class="font-bold text-white">Usuario</span></p>
@@ -178,7 +178,7 @@
                 <div id="accProfile" class="hidden px-4 pb-4 animate__animated animate__fadeIn">
                     <div class="flex items-center gap-4 mb-4">
                         <label class="cursor-pointer relative group">
-                            <img id="menuAvatar" src="icon.png" class="w-16 h-16 rounded-full object-cover border border-gray-600">
+                            <img id="menuAvatar" src="icon.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" class="w-16 h-16 rounded-full object-cover border border-gray-600">
                             <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span class="text-xl">📷</span>
                             </div>
@@ -310,9 +310,18 @@
     </footer>
 
     <script>
-        // --- BASE DE DATOS LOCAL CON PROTECCIÓN ANTI-CRASH ---
+        // --- 1. NÚCLEO DE DATOS SÚPER BLINDADO ---
         let usuariosDB = {};
-        try { usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {}; } catch(e) { usuariosDB = {}; }
+        try { 
+            let parsed = JSON.parse(localStorage.getItem('focus_usuarios')); 
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+                usuariosDB = parsed;
+            }
+        } catch(e) { 
+            console.error("Base de datos de usuarios corrupta. Reiniciando...");
+            usuariosDB = {}; 
+        }
+        
         let activeUser = localStorage.getItem('focus_active_user') || null;
 
         // --- SISTEMA DE TRADUCCIÓN ---
@@ -353,17 +362,19 @@
         };
 
         function aplicarIdioma(lang) {
-            const elements = document.querySelectorAll('[data-i18n]');
-            elements.forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if(dictionary[lang] && dictionary[lang][key]) el.innerHTML = dictionary[lang][key];
-            });
-            if(activeUser && usuariosDB[activeUser]) {
-                document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name || activeUser}</span>`;
-            }
+            try {
+                const elements = document.querySelectorAll('[data-i18n]');
+                elements.forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if(dictionary[lang] && dictionary[lang][key]) el.innerHTML = dictionary[lang][key];
+                });
+                if(activeUser && usuariosDB[activeUser]) {
+                    document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name || activeUser}</span>`;
+                }
+            } catch(e) { console.error("Error al aplicar idioma:", e); }
         }
 
-        // --- 50 FRASES MOTIVACIONALES ---
+        // --- FRASES MOTIVACIONALES ---
         const quotes = [
             { text: "No te midas por lo que lograste hoy, sino por la resistencia que mantuviste al intentarlo.", author: "Anónimo" },
             { text: "El sueño es el mejor regulador de la atención. Duerme tus 8 horas para conquistar tu día.", author: "Matthew Walker" },
@@ -379,45 +390,10 @@
             { text: "La disciplina es el puente entre las metas y los logros.", author: "Jim Rohn" },
             { text: "Haz lo que puedas, con lo que tengas, donde estés.", author: "Theodore Roosevelt" },
             { text: "No cuentes los días, haz que los días cuenten.", author: "Muhammad Ali" },
-            { text: "Tu futuro se crea por lo que haces hoy, no mañana.", author: "Robert Kiyosaki" },
-            { text: "No te ahogues en un vaso de agua, mejor bébetelo.", author: "Anónimo" },
-            { text: "Si no puedes volar, corre; si no puedes correr, camina; si no puedes caminar, gatea.", author: "Martin Luther King Jr." },
-            { text: "La energía fluye hacia donde va tu atención.", author: "Tony Robbins" },
-            { text: "El descanso también es productivo. No eres una máquina.", author: "Anónimo" },
-            { text: "No mires el reloj; haz lo que él hace. Sigue adelante.", author: "Sam Levenson" },
-            { text: "Una tarea a medias requiere la misma energía mental que una tarea terminada.", author: "Anónimo" },
-            { text: "A veces, el acto más productivo que puedes hacer es simplemente descansar.", author: "Mark Black" },
-            { text: "La excelencia no es un acto singular, sino un hábito.", author: "Aristóteles" },
-            { text: "El obstáculo es el camino. Lo que se interpone, te hace avanzar.", author: "Marco Aurelio" },
-            { text: "No se trata de 'tener' tiempo, se trata de 'hacer' tiempo.", author: "Anónimo" },
-            { text: "La simplicidad es la máxima sofisticación.", author: "Leonardo da Vinci" },
-            { text: "El fracaso es solo la oportunidad de comenzar de nuevo de forma más inteligente.", author: "Henry Ford" },
-            { text: "Lo único que se interpone entre tú y tu objetivo es la voluntad de intentarlo.", author: "Joel Brown" },
-            { text: "No necesitas ver toda la escalera, solo da el primer paso.", author: "Martin Luther King Jr." },
-            { text: "No digas que no tienes suficiente tiempo. Tienes exactamente las mismas horas que Albert Einstein.", author: "H. Jackson Brown Jr." },
-            { text: "El perfeccionismo es el peor enemigo de la productividad.", author: "Anónimo" },
-            { text: "La mejor manera de predecir tu futuro es creándolo hoy.", author: "Peter Drucker" },
-            { text: "Apunta a la luna. Incluso si fallas, aterrizarás entre las estrellas.", author: "W. Clement Stone" },
-            { text: "Lo que haces hoy puede mejorar todas tus mañanas.", author: "Ralph Marston" },
-            { text: "Si pasas demasiado tiempo pensando en una cosa, nunca la harás.", author: "Bruce Lee" },
-            { text: "La clave no es gastar el tiempo, sino invertirlo.", author: "Stephen R. Covey" },
-            { text: "Nada es particularmente difícil si lo divides en trabajos pequeños.", author: "Henry Ford" },
-            { text: "Solo aquellos que se atreven a tener grandes fracasos terminan consiguiendo grandes éxitos.", author: "Robert F. Kennedy" },
-            { text: "Nunca es demasiado tarde para ser lo que podrías haber sido.", author: "George Eliot" },
-            { text: "Toma el control de tu mente, o tu mente te controlará a ti.", author: "Anónimo" },
-            { text: "Cuando sientas que vas a rendirte, recuerda por qué empezaste.", author: "Anónimo" },
-            { text: "No te preocupes por los fracasos, preocúpate por las oportunidades que pierdes al no intentarlo.", author: "Jack Canfield" },
-            { text: "Si te cansas, aprende a descansar, no a renunciar.", author: "Banksy" },
-            { text: "Tu atención es tu recurso más valioso. Protégela ferozmente.", author: "Anónimo" },
-            { text: "Las grandes obras no son llevadas a cabo por la fuerza, sino por la perseverancia.", author: "Samuel Johnson" },
-            { text: "El orden en tu entorno refleja el orden en tu mente.", author: "Anónimo" },
-            { text: "Da siempre lo mejor de ti. Lo que plantes ahora, lo cosecharás más tarde.", author: "Og Mandino" },
-            { text: "Cada minuto que pasas planificando te ahorra 10 minutos de ejecución.", author: "Brian Tracy" },
-            { text: "Eres mucho más fuerte que tus distracciones.", author: "Anónimo" },
-            { text: "No busques el momento perfecto, busca el momento y hazlo perfecto.", author: "Anónimo" }
+            { text: "Tu futuro se crea por lo que haces hoy, no mañana.", author: "Robert Kiyosaki" }
         ];
 
-        // --- LOGIN Y REGISTRO ---
+        // --- 2. SISTEMA DE LOGIN Y REGISTRO PROTEGIDO ---
         function mostrarRegistro() { document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('registerScreen').classList.remove('hidden'); }
         function mostrarLogin() { document.getElementById('registerScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
 
@@ -431,38 +407,51 @@
         }
 
         function crearCuenta() {
-            const user = document.getElementById('regUser').value.trim();
-            const gender = document.getElementById('regGender').value;
-            const pass = document.getElementById('regPass').value;
-            const passConf = document.getElementById('regPassConfirm').value;
+            try {
+                const user = document.getElementById('regUser').value.trim();
+                const gender = document.getElementById('regGender').value;
+                const pass = document.getElementById('regPass').value;
+                const passConf = document.getElementById('regPassConfirm').value;
 
-            if(!user || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
-            if(usuariosDB[user]) return alert('Este usuario ya existe.');
-            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos.');
-            if(pass !== passConf) return alert('Las contraseñas no coinciden.');
+                if(!user || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
+                if(usuariosDB[user]) return alert('Este usuario ya existe.');
+                if(!validarPassword()) return alert('La contraseña no cumple con los requisitos.');
+                if(pass !== passConf) return alert('Las contraseñas no coinciden.');
 
-            usuariosDB[user] = { pass: pass, name: user, gender: gender, age: '', birthday: '', avatar: 'icon.png', lang: 'es', theme: 'dark' };
-            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
-            
-            alert('¡Cuenta creada! Por favor inicia sesión.');
-            document.getElementById('regUser').value = ''; document.getElementById('regPass').value = ''; document.getElementById('regPassConfirm').value = '';
-            mostrarLogin();
+                usuariosDB[user] = { pass: pass, name: user, gender: gender, age: '', birthday: '', avatar: 'icon.png', lang: 'es', theme: 'dark' };
+                localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+                
+                alert('¡Cuenta creada exitosamente! Por favor inicia sesión.');
+                document.getElementById('regUser').value = ''; document.getElementById('regPass').value = ''; document.getElementById('regPassConfirm').value = '';
+                mostrarLogin();
+            } catch(e) {
+                alert('Hubo un error interno al crear la cuenta. La página se recargará.');
+                localStorage.removeItem('focus_usuarios');
+                location.reload();
+            }
         }
 
         function iniciarSesion() {
-            const user = document.getElementById('loginUser').value.trim();
-            const pass = document.getElementById('loginPass').value.trim();
+            try {
+                const user = document.getElementById('loginUser').value.trim();
+                const pass = document.getElementById('loginPass').value.trim();
 
-            if(!user || !pass) return alert('Ingresa usuario y contraseña.');
-            if(!usuariosDB[user]) return alert('Usuario no encontrado.');
-            if(usuariosDB[user].pass !== pass) return alert('Contraseña incorrecta.');
-            
-            activeUser = user;
-            if(document.getElementById('keepLogged').checked) {
-                localStorage.setItem('focus_user_logged', 'true');
-                localStorage.setItem('focus_active_user', activeUser);
+                if(!user || !pass) return alert('Por favor, ingresa tu usuario y contraseña.');
+                if(!usuariosDB || !usuariosDB[user]) return alert('Usuario no encontrado. Revisa si lo escribiste bien o "Regístrate aquí".');
+                if(usuariosDB[user].pass !== pass) return alert('Contraseña incorrecta.');
+                
+                activeUser = user;
+                if(document.getElementById('keepLogged').checked) {
+                    localStorage.setItem('focus_user_logged', 'true');
+                    localStorage.setItem('focus_active_user', activeUser);
+                }
+                entrarAplicacion();
+            } catch(e) {
+                console.error("Fallo crítico en Login:", e);
+                alert("Los datos guardados en el teléfono se corrompieron. Se ha limpiado el sistema. Por favor, crea tu cuenta de nuevo.");
+                localStorage.removeItem('focus_usuarios');
+                usuariosDB = {};
             }
-            entrarAplicacion();
         }
 
         function cerrarSesion() {
@@ -481,37 +470,34 @@
             });
         }
 
+        // --- 3. LÓGICA PRINCIPAL BLINDADA ---
         function entrarAplicacion() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.remove('hidden');
-            
-            cargarAjustesUI();
-            
-            const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-            const daily = quotes[dayOfYear % quotes.length];
-            document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
-            document.getElementById('dailyAuthor').innerText = `- ${daily.author}`;
-            
-            renderTabs();
-            renderContextButtons();
-            renderTasks();
-            actualizarAnaliticas();
+            try {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('registerScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                cargarAjustesUI();
+                
+                const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+                const daily = quotes[dayOfYear % quotes.length] || quotes[0];
+                document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
+                document.getElementById('dailyAuthor').innerText = `- ${daily.author}`;
+                
+                renderTabs();
+                renderContextButtons();
+                renderTasks();
+                actualizarAnaliticas();
+            } catch(e) {
+                console.error("Fallo crítico al entrar a la app:", e);
+            }
         }
 
-        if(localStorage.getItem('focus_user_logged') === 'true' && activeUser && usuariosDB[activeUser]) {
-            entrarAplicacion();
-        }
-
-        // --- LÓGICA DEL MENÚ DE CONFIGURACIÓN Y ACORDEÓN ---
+        // --- MENÚ DE CONFIGURACIÓN ---
         function toggleSettingsMenu(show) {
             const modal = document.getElementById('settingsModal');
-            if(show) {
-                cargarAjustesUI();
-                modal.classList.remove('hidden'); modal.classList.add('flex');
-            } else {
-                modal.classList.add('hidden'); modal.classList.remove('flex');
-            }
+            if(show) { cargarAjustesUI(); modal.classList.remove('hidden'); modal.classList.add('flex'); } 
+            else { modal.classList.add('hidden'); modal.classList.remove('flex'); }
         }
 
         function toggleAccordion(id) {
@@ -530,7 +516,6 @@
         }
 
         function cargarAjustesUI() {
-            // Protección Anti-Crash
             if(!usuariosDB[activeUser]) usuariosDB[activeUser] = { lang: 'es', theme: 'dark', avatar: 'icon.png', gender: 'Hombre', name: activeUser };
             
             const u = usuariosDB[activeUser];
@@ -621,20 +606,21 @@
             else document.body.classList.remove('light-mode');
         }
 
-        // --- SISTEMA DE TAREAS Y APARTADOS ---
+        // --- 4. TAREAS Y APARTADOS A PRUEBA DE FALLOS ---
         let tasks = [];
-        try { tasks = JSON.parse(localStorage.getItem('tasks_v6')) || []; if(!Array.isArray(tasks)) tasks = []; } catch(e) { tasks = []; }
+        try { let pt = JSON.parse(localStorage.getItem('tasks_v6')); if(Array.isArray(pt)) tasks = pt.filter(t => t && t.text !== undefined); } catch(e) { tasks = []; }
         
         let historyTasks = [];
-        try { historyTasks = JSON.parse(localStorage.getItem('history_v1')) || []; if(!Array.isArray(historyTasks)) historyTasks = []; } catch(e) { historyTasks = []; }
+        try { let ph = JSON.parse(localStorage.getItem('history_v1')); if(Array.isArray(ph)) historyTasks = ph.filter(h => h && h.text !== undefined); } catch(e) { historyTasks = []; }
         
         let contexts = [];
-        try { contexts = JSON.parse(localStorage.getItem('contexts_v2')); if(!Array.isArray(contexts) || contexts.length === 0) throw "empty"; } 
-        catch(e) { 
-            contexts = [
-                { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' },
-                { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' }
-            ]; 
+        try { 
+            let pc = JSON.parse(localStorage.getItem('contexts_v2')); 
+            if(Array.isArray(pc)) contexts = pc.filter(c => c && c.id && c.name); 
+            if(contexts.length === 0) throw "empty";
+        } catch(e) { 
+            contexts = [ { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' }, { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' } ]; 
+            localStorage.setItem('contexts_v2', JSON.stringify(contexts));
         }
 
         let currentFilter = 'Todos';
@@ -664,33 +650,40 @@
         }
 
         function renderTabs() {
-            const container = document.getElementById('tabContainer');
-            const isLight = document.body.classList.contains('light-mode');
-            const defaultTxtColor = isLight ? 'text-gray-900 border-gray-900' : 'text-white border-white';
-            
-            // Protección de idioma en pestañas
-            const uLang = (usuariosDB[activeUser] && usuariosDB[activeUser].lang) ? usuariosDB[activeUser].lang : 'es';
-            const tabName = dictionary[uLang].tabOverview;
+            try {
+                const container = document.getElementById('tabContainer');
+                const isLight = document.body.classList.contains('light-mode');
+                const defaultTxtColor = isLight ? 'text-gray-900 border-gray-900' : 'text-white border-white';
+                
+                const uLang = (usuariosDB[activeUser] && usuariosDB[activeUser].lang) ? usuariosDB[activeUser].lang : 'es';
+                const tabName = (dictionary[uLang] && dictionary[uLang].tabOverview) ? dictionary[uLang].tabOverview : "Visión General";
 
-            container.innerHTML = `<button onclick="setFilter('Todos')" class="shrink-0 pb-2 transition-all text-sm ${currentFilter === 'Todos' ? `border-b-2 font-bold ${defaultTxtColor}` : 'text-gray-500 hover:text-gray-400'}">${tabName}</button>`;
-            
-            contexts.forEach(ctx => {
-                const isActive = currentFilter === ctx.id;
-                container.innerHTML += `<button onclick="setFilter('${ctx.id}')" style="${isActive ? `border-bottom: 2px solid ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : ''}" class="shrink-0 pb-2 transition-all text-sm ${!isActive ? 'text-gray-500 hover:text-gray-400' : ''}">${ctx.icon} ${ctx.name}</button>`;
-            });
+                let html = `<button onclick="setFilter('Todos')" class="shrink-0 pb-2 transition-all text-sm ${currentFilter === 'Todos' ? `border-b-2 font-bold ${defaultTxtColor}` : 'text-gray-500 hover:text-gray-400'}">${tabName}</button>`;
+                
+                contexts.forEach(ctx => {
+                    if(!ctx || !ctx.id) return;
+                    const isActive = currentFilter === ctx.id;
+                    html += `<button onclick="setFilter('${ctx.id}')" style="${isActive ? `border-bottom: 2px solid ${ctx.color || '#3b82f6'}; color: ${ctx.color || '#3b82f6'}; font-weight: bold;` : ''}" class="shrink-0 pb-2 transition-all text-sm ${!isActive ? 'text-gray-500 hover:text-gray-400' : ''}">${ctx.icon || '📌'} ${ctx.name || 'Apartado'}</button>`;
+                });
 
-            container.innerHTML += `<button onclick="openContextModal()" class="shrink-0 pb-2 transition-all text-sm text-blue-400 font-bold hover:text-blue-300 flex items-center gap-1">+ Nuevo</button>`;
+                html += `<button onclick="openContextModal()" class="shrink-0 pb-2 transition-all text-sm text-blue-400 font-bold hover:text-blue-300 flex items-center gap-1">+ Nuevo</button>`;
+                container.innerHTML = html;
+            } catch(e) { console.error("Error al renderizar pestañas:", e); }
         }
 
         function renderContextButtons() {
-            const container = document.getElementById('contextButtons');
-            container.innerHTML = '';
-            contexts.forEach(ctx => {
-                const isSelected = selectedContext === ctx.id;
-                const style = isSelected ? `background-color: ${ctx.color}30; border-color: ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : `border-color: #374151; color: #9ca3af;`;
-                container.innerHTML += `<button onclick="setContext('${ctx.id}')" style="${style}" class="px-3 py-1.5 rounded-xl border text-sm transition-all flex items-center gap-1">${ctx.icon} ${ctx.name}</button>`;
-            });
-            container.innerHTML += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-500 text-gray-500 text-sm transition-all flex items-center">+ Nuevo</button>`;
+            try {
+                const container = document.getElementById('contextButtons');
+                let html = '';
+                contexts.forEach(ctx => {
+                    if(!ctx || !ctx.id) return;
+                    const isSelected = selectedContext === ctx.id;
+                    const style = isSelected ? `background-color: ${ctx.color || '#3b82f6'}30; border-color: ${ctx.color || '#3b82f6'}; color: ${ctx.color || '#3b82f6'}; font-weight: bold;` : `border-color: #374151; color: #9ca3af;`;
+                    html += `<button onclick="setContext('${ctx.id}')" style="${style}" class="px-3 py-1.5 rounded-xl border text-sm transition-all flex items-center gap-1">${ctx.icon || '📌'} ${ctx.name || 'Apartado'}</button>`;
+                });
+                html += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-500 text-gray-500 text-sm transition-all flex items-center">+ Nuevo</button>`;
+                container.innerHTML = html;
+            } catch(e) { console.error("Error botones de contexto:", e); }
         }
 
         function setContext(id) { selectedContext = id; renderContextButtons(); }
@@ -699,61 +692,60 @@
 
         function saveNewContext() {
             const name = document.getElementById('newCtxName').value.trim(), icon = document.getElementById('newCtxIcon').value.trim() || '📌', color = document.getElementById('newCtxColor').value;
-            if(!name) return alert("Ponle un nombre.");
+            if(!name) return alert("Ponle un nombre al apartado.");
             const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
             contexts.push({ id: newId, name: name, icon: icon, color: color });
             localStorage.setItem('contexts_v2', JSON.stringify(contexts));
-            setContext(newId); 
-            renderTabs(); 
-            closeContextModal();
-            document.getElementById('newCtxName').value = '';
-            document.getElementById('newCtxIcon').value = '';
+            setContext(newId); renderTabs(); closeContextModal();
+            document.getElementById('newCtxName').value = ''; document.getElementById('newCtxIcon').value = '';
         }
 
         function renderTasks() {
-            const container = document.getElementById('taskList'), emptyState = document.getElementById('emptyState');
-            container.innerHTML = '';
-            let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
-            
-            if(filtered.length === 0) { emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); return; } 
-            else { emptyState.classList.add('hidden'); emptyState.classList.remove('flex'); }
-
-            const today = new Date().toISOString().split('T')[0];
-            filtered.forEach((t) => {
-                const globalIndex = tasks.indexOf(t), mins = Math.floor(t.timeLeft / 60), secs = t.timeLeft % 60;
-                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Des', icon: '❓', color: '#6b7280' };
+            try {
+                const container = document.getElementById('taskList'), emptyState = document.getElementById('emptyState');
+                container.innerHTML = '';
+                let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
                 
-                let dateBadge = '';
-                if (t.date) {
-                    const isOverdue = t.date <= today;
-                    const badgeClass = isOverdue ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-gray-800/50 text-gray-400 border-gray-700/50';
-                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeClass} flex items-center gap-1">${isOverdue ? '⚠️' : '📅'} ${t.date}</span>`;
-                }
+                if(filtered.length === 0) { emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); return; } 
+                else { emptyState.classList.add('hidden'); emptyState.classList.remove('flex'); }
 
-                const div = document.createElement('div');
-                div.className = "glass-card p-5 rounded-2xl flex flex-col gap-4 animate__animated animate__fadeIn";
-                div.innerHTML = `
-                    <div class="flex justify-between items-start gap-3">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[10px] px-2 py-0.5 rounded-md border font-bold flex items-center gap-1" style="background-color: ${taskContext.color}20; border-color: ${taskContext.color}50; color: ${taskContext.color};">${taskContext.icon} ${taskContext.name.toUpperCase()}</span>
-                                ${dateBadge}
+                const today = new Date().toISOString().split('T')[0];
+                filtered.forEach((t) => {
+                    const globalIndex = tasks.indexOf(t), mins = Math.floor(t.timeLeft / 60), secs = t.timeLeft % 60;
+                    const taskContext = contexts.find(c => c && c.id === t.contextId) || { name: 'Desconocido', icon: '❓', color: '#6b7280' };
+                    
+                    let dateBadge = '';
+                    if (t.date) {
+                        const isOverdue = t.date <= today;
+                        const badgeClass = isOverdue ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-gray-800/50 text-gray-400 border-gray-700/50';
+                        dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeClass} flex items-center gap-1">${isOverdue ? '⚠️' : '📅'} ${t.date}</span>`;
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = "glass-card p-5 rounded-2xl flex flex-col gap-4 animate__animated animate__fadeIn";
+                    div.innerHTML = `
+                        <div class="flex justify-between items-start gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-[10px] px-2 py-0.5 rounded-md border font-bold flex items-center gap-1" style="background-color: ${taskContext.color}20; border-color: ${taskContext.color}50; color: ${taskContext.color};">${taskContext.icon} ${taskContext.name.toUpperCase()}</span>
+                                    ${dateBadge}
+                                </div>
+                                <p class="text-base font-medium leading-snug">${t.text}</p>
                             </div>
-                            <p class="text-base font-medium leading-snug">${t.text}</p>
+                            <div class="text-right shrink-0">
+                                <p class="text-2xl font-mono ${t.isRunning ? 'timer-active' : 'text-gray-500'}">${mins}:${secs < 10 ? '0' : ''}${secs}</p>
+                            </div>
                         </div>
-                        <div class="text-right shrink-0">
-                            <p class="text-2xl font-mono ${t.isRunning ? 'timer-active' : 'text-gray-500'}">${mins}:${secs < 10 ? '0' : ''}${secs}</p>
+                        <div class="flex gap-2 mt-1">
+                            <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl border border-gray-500/30 text-xs font-semibold tracking-wide hover:bg-gray-500/10 transition-colors">
+                                ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
+                            </button>
+                            <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-transform" style="background-color: ${taskContext.color}">HECHO ✓</button>
                         </div>
-                    </div>
-                    <div class="flex gap-2 mt-1">
-                        <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl border border-gray-500/30 text-xs font-semibold tracking-wide hover:bg-gray-500/10 transition-colors">
-                            ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
-                        </button>
-                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-transform" style="background-color: ${taskContext.color}">HECHO ✓</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
+                    `;
+                    container.appendChild(div);
+                });
+            } catch(e) { console.error("Error al renderizar tareas", e); }
         }
 
         function addTask() {
@@ -792,34 +784,45 @@
         }
 
         function actualizarAnaliticas() {
-            document.getElementById('statTotal').innerText = historyTasks.length;
-            const cList = document.getElementById('historyList'); cList.innerHTML = '';
-            
-            if(historyTasks.length === 0) {
-                cList.innerHTML = '<p class="text-sm text-gray-500 italic">Aún no hay tareas completadas.</p>';
-                document.getElementById('statBestHour').innerText = "--:--"; document.getElementById('statBestArea').innerText = "--"; document.getElementById('statWorstArea').innerText = "--";
-                return;
-            }
+            try {
+                document.getElementById('statTotal').innerText = historyTasks.length;
+                const cList = document.getElementById('historyList'); cList.innerHTML = '';
+                
+                if(historyTasks.length === 0) {
+                    cList.innerHTML = '<p class="text-sm text-gray-500 italic">Aún no hay tareas completadas.</p>';
+                    document.getElementById('statBestHour').innerText = "--:--"; document.getElementById('statBestArea').innerText = "--"; document.getElementById('statWorstArea').innerText = "--";
+                    return;
+                }
 
-            let hoursCount = {}, contextCount = {};
-            historyTasks.slice().reverse().forEach(t => {
-                const d = new Date(t.completedAt), ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌', color: '#6b7280' };
-                cList.innerHTML += `<div class="bg-gray-500/10 p-3 rounded-xl flex justify-between items-center mb-2"><div class="flex items-center gap-2"><span style="color: ${ctx.color}">${ctx.icon}</span><p class="text-sm line-through opacity-70">${t.text}</p></div><span class="text-[10px] opacity-50">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
-                hoursCount[d.getHours()] = (hoursCount[d.getHours()] || 0) + 1; contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
-            });
+                let hoursCount = {}, contextCount = {};
+                historyTasks.slice().reverse().forEach(t => {
+                    const d = new Date(t.completedAt), ctx = contexts.find(c => c && c.id === t.contextId) || { name: 'Desconocido', icon: '❓', color: '#6b7280' };
+                    cList.innerHTML += `<div class="bg-gray-500/10 p-3 rounded-xl flex justify-between items-center mb-2"><div class="flex items-center gap-2"><span style="color: ${ctx.color}">${ctx.icon}</span><p class="text-sm line-through opacity-70">${t.text}</p></div><span class="text-[10px] opacity-50">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
+                    hoursCount[d.getHours()] = (hoursCount[d.getHours()] || 0) + 1; contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
+                });
 
-            let bestHour = Object.keys(hoursCount).reduce((a, b) => hoursCount[a] > hoursCount[b] ? a : b);
-            document.getElementById('statBestHour').innerText = `${bestHour}:00`;
-            let bestCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] > contextCount[b] ? a : b);
-            let worstCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] < contextCount[b] ? a : b);
-            
-            const bestCtxObj = contexts.find(c => c.id === bestCtxId), worstCtxObj = contexts.find(c => c.id === worstCtxId);
-            document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
-            document.getElementById('statBestArea').style.color = bestCtxObj ? bestCtxObj.color : '#fff';
-            document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
+                let bestHour = Object.keys(hoursCount).reduce((a, b) => hoursCount[a] > hoursCount[b] ? a : b);
+                document.getElementById('statBestHour').innerText = `${bestHour}:00`;
+                let bestCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] > contextCount[b] ? a : b);
+                let worstCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] < contextCount[b] ? a : b);
+                
+                const bestCtxObj = contexts.find(c => c && c.id === bestCtxId), worstCtxObj = contexts.find(c => c && c.id === worstCtxId);
+                document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
+                document.getElementById('statBestArea').style.color = bestCtxObj ? bestCtxObj.color : '#fff';
+                document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
+            } catch(e) { console.error("Error analiticas:", e); }
         }
 
         function saveAndRender() { localStorage.setItem('tasks_v6', JSON.stringify(tasks)); renderTasks(); }
+
+        // --- 5. INICIO DE SESIÓN AUTOMÁTICO SEGURO ---
+        setTimeout(() => {
+            try {
+                if(localStorage.getItem('focus_user_logged') === 'true' && activeUser && usuariosDB && usuariosDB[activeUser]) {
+                    entrarAplicacion();
+                }
+            } catch(e) { console.error("Auto-login error", e); }
+        }, 150); 
     </script>
 </body>
 </html>

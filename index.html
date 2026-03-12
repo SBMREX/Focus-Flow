@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Flow - Ing. Saúl Briceño</title>
+    <title>Focus Flow - Saúl Briceño</title>
     <link rel="manifest" href="manifest.json">
 
     <meta name="mobile-web-app-capable" content="yes">
@@ -211,6 +211,17 @@
             </div>
 
             <div class="bg-white/5 rounded-2xl mb-4 border border-white/10 overflow-hidden transition-all">
+                <button onclick="toggleAccordion('accContexts'); renderContextManager();" class="w-full p-4 flex justify-between items-center outline-none">
+                    <h3 data-i18n="secContexts" class="text-yellow-400 font-bold text-sm uppercase tracking-wider">📂 Mis Apartados</h3>
+                    <span id="icon-accContexts" class="text-gray-400 text-xs transition-transform transform">▼</span>
+                </button>
+                <div id="accContexts" class="hidden px-4 pb-4 animate__animated animate__fadeIn">
+                    <div id="contextManagerList" class="space-y-2 mb-3"></div>
+                    <button onclick="openContextModal()" class="w-full py-2 bg-yellow-600/20 text-yellow-400 border border-yellow-500/30 rounded-lg text-sm font-bold hover:bg-yellow-600/40 transition-colors">+ Crear Nuevo Apartado</button>
+                </div>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl mb-4 border border-white/10 overflow-hidden transition-all">
                 <button onclick="toggleAccordion('accCustom')" class="w-full p-4 flex justify-between items-center outline-none">
                     <h3 data-i18n="secCustom" class="text-purple-400 font-bold text-sm uppercase tracking-wider">🎨 Personalización</h3>
                     <span id="icon-accCustom" class="text-gray-400 text-xs transition-transform transform">▼</span>
@@ -282,7 +293,8 @@
 
     <div id="newContextModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-center items-center px-4">
         <div class="glass p-6 rounded-3xl shadow-2xl animate__animated animate__zoomIn w-full max-w-sm">
-            <h3 data-i18n="modalNewArea" class="text-lg font-bold text-white mb-4">Crear Nuevo Apartado</h3>
+            <h3 id="modalAreaTitle" class="text-lg font-bold text-white mb-4">Crear Nuevo Apartado</h3>
+            <input id="editCtxId" type="hidden">
             <input id="newCtxName" type="text" placeholder="Nombre (ej. Auto...)" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm mb-4">
             <div class="flex gap-4 mb-6">
                 <div class="flex-1">
@@ -296,35 +308,31 @@
             </div>
             <div class="flex gap-3">
                 <button onclick="closeContextModal()" data-i18n="btnCancel" class="flex-1 py-3 rounded-xl border border-gray-600 text-gray-300 text-sm font-bold">Cancelar</button>
-                <button onclick="saveNewContext()" data-i18n="btnCreate" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold">Crear</button>
+                <button onclick="saveContext()" data-i18n="btnSave" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold">Guardar</button>
             </div>
+            <button id="btnDeleteCtx" onclick="deleteContext()" class="w-full mt-3 py-2 rounded-xl bg-red-600/20 text-red-500 text-xs font-bold hidden border border-red-500/30">Eliminar Apartado</button>
         </div>
     </div>
 
     <footer class="mt-auto py-6 text-center opacity-60 hover:opacity-100 transition-opacity pb-8">
         <div class="inline-flex items-center justify-center gap-2">
             <div class="h-px w-8 bg-gradient-to-r from-transparent to-gray-500"></div>
-            <span class="text-xs font-medium tracking-widest text-gray-400" data-i18n="txtDesigned">HECHO POR <span class="text-gray-200">ING. SAÚL BRICEÑO</span></span>
+            <span class="text-xs font-medium tracking-widest text-gray-400" data-i18n="txtDesigned">HECHO POR <span class="text-gray-200">SAÚL BRICEÑO</span></span>
             <div class="h-px w-8 bg-gradient-to-l from-transparent to-gray-500"></div>
         </div>
     </footer>
 
     <script>
-        // --- 1. NÚCLEO DE DATOS SÚPER BLINDADO ---
         let usuariosDB = {};
         try { 
             let parsed = JSON.parse(localStorage.getItem('focus_usuarios')); 
             if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
                 usuariosDB = parsed;
             }
-        } catch(e) { 
-            console.error("Base de datos de usuarios corrupta. Reiniciando...");
-            usuariosDB = {}; 
-        }
+        } catch(e) { usuariosDB = {}; }
         
         let activeUser = localStorage.getItem('focus_active_user') || null;
 
-        // --- SISTEMA DE TRADUCCIÓN ---
         const dictionary = {
             es: {
                 welcome: "Bienvenido de nuevo", btnLogin: "INICIAR SESIÓN", noAccount: "¿No tienes cuenta?", btnRegisterHere: "Regístrate aquí",
@@ -332,10 +340,11 @@
                 tabOverview: "Visión General", tabProgress: "Mi Progreso", emptyState: "Todo despejado. Toca el + para empezar.",
                 titleAnalytics: "Analíticas de Productividad", statBestHour: "Mejor Hora", statTotalDone: "Total Hechas", statBestArea: "Área Destacada", statWorstArea: "Área a Mejorar", historyTitle: "Historial Reciente", btnDeleteHistory: "Borrar Historial",
                 menuSettings: "Configuración", secProfile: "👤 Perfil", lblAge: "EDAD", lblGender: "SEXO", lblBirthday: "FECHA DE CUMPLEAÑOS", btnSaveProfile: "Guardar Perfil",
+                secContexts: "📂 Mis Apartados",
                 secCustom: "🎨 Personalización", lblLanguage: "IDIOMA", lblTheme: "TEMA", secSecurity: "🔒 Seguridad", btnSaveSecurity: "Actualizar Credenciales", btnLogout: "CERRAR SESIÓN",
                 modalNewTask: "Nueva Tarea", lblMinutes: "MINUTOS", lblDate: "FECHA (OPCIONAL)", lblChooseContext: "ELIGE EL APARTADO", btnSaveTask: "GUARDAR TAREA",
-                modalNewArea: "Crear Nuevo Apartado", lblColor: "COLOR", btnCancel: "Cancelar", btnCreate: "Crear",
-                txtDesigned: "HECHO POR <span class='text-gray-200 font-bold'>ING. SAÚL BRICEÑO</span>", txtGreeting: "Hola"
+                modalNewArea: "Crear Nuevo Apartado", lblColor: "COLOR", btnCancel: "Cancelar", btnSave: "Guardar",
+                txtDesigned: "HECHO POR <span class='text-gray-200 font-bold'>SAÚL BRICEÑO</span>", txtGreeting: "Hola"
             },
             en: {
                 welcome: "Welcome back", btnLogin: "LOG IN", noAccount: "Don't have an account?", btnRegisterHere: "Register here",
@@ -343,10 +352,11 @@
                 tabOverview: "Overview", tabProgress: "My Progress", emptyState: "All clear. Tap + to start.",
                 titleAnalytics: "Productivity Analytics", statBestHour: "Best Hour", statTotalDone: "Total Done", statBestArea: "Top Area", statWorstArea: "Area to Improve", historyTitle: "Recent History", btnDeleteHistory: "Clear History",
                 menuSettings: "Settings", secProfile: "👤 Profile", lblAge: "AGE", lblGender: "GENDER", lblBirthday: "BIRTHDAY", btnSaveProfile: "Save Profile",
+                secContexts: "📂 My Categories",
                 secCustom: "🎨 Customization", lblLanguage: "LANGUAGE", lblTheme: "THEME", secSecurity: "🔒 Security", btnSaveSecurity: "Update Credentials", btnLogout: "LOG OUT",
                 modalNewTask: "New Task", lblMinutes: "MINUTES", lblDate: "DATE (OPTIONAL)", lblChooseContext: "CHOOSE CATEGORY", btnSaveTask: "SAVE TASK",
-                modalNewArea: "Create New Category", lblColor: "COLOR", btnCancel: "Cancel", btnCreate: "Create",
-                txtDesigned: "MADE BY <span class='text-gray-200 font-bold'>ENG. SAÚL BRICEÑO</span>", txtGreeting: "Hello"
+                modalNewArea: "Create New Category", lblColor: "COLOR", btnCancel: "Cancel", btnSave: "Save",
+                txtDesigned: "MADE BY <span class='text-gray-200 font-bold'>SAÚL BRICEÑO</span>", txtGreeting: "Hello"
             },
             fr: {
                 welcome: "Bon retour", btnLogin: "CONNEXION", noAccount: "Pas de compte ?", btnRegisterHere: "Inscrivez-vous ici",
@@ -354,10 +364,11 @@
                 tabOverview: "Vue d'ensemble", tabProgress: "Mes Progrès", emptyState: "Tout est clair. Appuyez sur + pour commencer.",
                 titleAnalytics: "Analytique de Productivité", statBestHour: "Meilleure Heure", statTotalDone: "Total Fait", statBestArea: "Meilleur Domaine", statWorstArea: "Domaine à Améliorer", historyTitle: "Historique Récent", btnDeleteHistory: "Effacer l'historique",
                 menuSettings: "Paramètres", secProfile: "👤 Profil", lblAge: "ÂGE", lblGender: "GENRE", lblBirthday: "DATE DE NAISSANCE", btnSaveProfile: "Enregistrer le profil",
+                secContexts: "📂 Mes Catégories",
                 secCustom: "🎨 Personnalisation", lblLanguage: "LANGUE", lblTheme: "THÈME", secSecurity: "🔒 Sécurité", btnSaveSecurity: "Mettre à jour", btnLogout: "DÉCONNEXION",
                 modalNewTask: "Nouvelle Tâche", lblMinutes: "MINUTES", lblDate: "DATE (OPTIONNELLE)", lblChooseContext: "CHOISIR LA CATÉGORIE", btnSaveTask: "ENREGISTRER",
-                modalNewArea: "Créer une Catégorie", lblColor: "COULEUR", btnCancel: "Annuler", btnCreate: "Créer",
-                txtDesigned: "FAIT PAR <span class='text-gray-200 font-bold'>ING. SAÚL BRICEÑO</span>", txtGreeting: "Salut"
+                modalNewArea: "Créer une Catégorie", lblColor: "COULEUR", btnCancel: "Annuler", btnSave: "Enregistrer",
+                txtDesigned: "FAIT PAR <span class='text-gray-200 font-bold'>SAÚL BRICEÑO</span>", txtGreeting: "Salut"
             }
         };
 
@@ -371,29 +382,17 @@
                 if(activeUser && usuariosDB[activeUser]) {
                     document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name || activeUser}</span>`;
                 }
-            } catch(e) { console.error("Error al aplicar idioma:", e); }
+            } catch(e) {}
         }
 
-        // --- FRASES MOTIVACIONALES ---
         const quotes = [
             { text: "No te midas por lo que lograste hoy, sino por la resistencia que mantuviste al intentarlo.", author: "Anónimo" },
             { text: "El sueño es el mejor regulador de la atención. Duerme tus 8 horas para conquistar tu día.", author: "Matthew Walker" },
             { text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día.", author: "Robert Collier" },
             { text: "Haz una cosa a la vez. El cerebro no es multitarea, es un proyector de un solo lente.", author: "Dr. Edward Hallowell" },
-            { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo de Productividad" },
-            { text: "La motivación nos impulsa a comenzar, pero el hábito nos permite continuar.", author: "Jim Ryun" },
-            { text: "No esperes a que las condiciones sean perfectas para empezar. Empezar hace que las condiciones sean perfectas.", author: "Alan Cohen" },
-            { text: "El secreto para salir adelante es simplemente empezar.", author: "Mark Twain" },
-            { text: "No tienes que ser extremo, solo consistente.", author: "Anónimo" },
-            { text: "El progreso, no la perfección, es lo que realmente importa.", author: "Anónimo" },
-            { text: "Céntrate en ser productivo, no en estar ocupado.", author: "Tim Ferriss" },
-            { text: "La disciplina es el puente entre las metas y los logros.", author: "Jim Rohn" },
-            { text: "Haz lo que puedas, con lo que tengas, donde estés.", author: "Theodore Roosevelt" },
-            { text: "No cuentes los días, haz que los días cuenten.", author: "Muhammad Ali" },
-            { text: "Tu futuro se crea por lo que haces hoy, no mañana.", author: "Robert Kiyosaki" }
+            { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo de Productividad" }
         ];
 
-        // --- 2. SISTEMA DE LOGIN Y REGISTRO PROTEGIDO ---
         function mostrarRegistro() { document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('registerScreen').classList.remove('hidden'); }
         function mostrarLogin() { document.getElementById('registerScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
 
@@ -424,11 +423,7 @@
                 alert('¡Cuenta creada exitosamente! Por favor inicia sesión.');
                 document.getElementById('regUser').value = ''; document.getElementById('regPass').value = ''; document.getElementById('regPassConfirm').value = '';
                 mostrarLogin();
-            } catch(e) {
-                alert('Hubo un error interno al crear la cuenta. La página se recargará.');
-                localStorage.removeItem('focus_usuarios');
-                location.reload();
-            }
+            } catch(e) { location.reload(); }
         }
 
         function iniciarSesion() {
@@ -437,7 +432,7 @@
                 const pass = document.getElementById('loginPass').value.trim();
 
                 if(!user || !pass) return alert('Por favor, ingresa tu usuario y contraseña.');
-                if(!usuariosDB || !usuariosDB[user]) return alert('Usuario no encontrado. Revisa si lo escribiste bien o "Regístrate aquí".');
+                if(!usuariosDB || !usuariosDB[user]) return alert('Usuario no encontrado.');
                 if(usuariosDB[user].pass !== pass) return alert('Contraseña incorrecta.');
                 
                 activeUser = user;
@@ -447,7 +442,6 @@
                 }
                 entrarAplicacion();
             } catch(e) {
-                console.error("Fallo crítico en Login:", e);
                 alert("Los datos guardados en el teléfono se corrompieron. Se ha limpiado el sistema. Por favor, crea tu cuenta de nuevo.");
                 localStorage.removeItem('focus_usuarios');
                 usuariosDB = {};
@@ -464,13 +458,12 @@
             document.getElementById('loginPass').value = '';
             document.body.classList.remove('light-mode'); 
             
-            ['accProfile', 'accCustom', 'accSecurity'].forEach(id => {
+            ['accProfile', 'accCustom', 'accContexts', 'accSecurity'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
                 document.getElementById('icon-' + id).style.transform = 'rotate(0deg)';
             });
         }
 
-        // --- 3. LÓGICA PRINCIPAL BLINDADA ---
         function entrarAplicacion() {
             try {
                 document.getElementById('loginScreen').classList.add('hidden');
@@ -488,12 +481,9 @@
                 renderContextButtons();
                 renderTasks();
                 actualizarAnaliticas();
-            } catch(e) {
-                console.error("Fallo crítico al entrar a la app:", e);
-            }
+            } catch(e) {}
         }
 
-        // --- MENÚ DE CONFIGURACIÓN ---
         function toggleSettingsMenu(show) {
             const modal = document.getElementById('settingsModal');
             if(show) { cargarAjustesUI(); modal.classList.remove('hidden'); modal.classList.add('flex'); } 
@@ -501,7 +491,7 @@
         }
 
         function toggleAccordion(id) {
-            const sections = ['accProfile', 'accCustom', 'accSecurity'];
+            const sections = ['accProfile', 'accCustom', 'accContexts', 'accSecurity'];
             sections.forEach(sec => {
                 const el = document.getElementById(sec);
                 const icon = document.getElementById('icon-' + sec);
@@ -581,9 +571,7 @@
             usuariosDB[activeUser].pass = newPass;
             localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
             
-            document.getElementById('setNewUser').value = '';
-            document.getElementById('setNewPass').value = '';
-            document.getElementById('setConfirmPass').value = '';
+            document.getElementById('setNewUser').value = ''; document.getElementById('setNewPass').value = ''; document.getElementById('setConfirmPass').value = '';
             alert("Credenciales de seguridad actualizadas.");
         }
 
@@ -606,7 +594,6 @@
             else document.body.classList.remove('light-mode');
         }
 
-        // --- 4. TAREAS Y APARTADOS A PRUEBA DE FALLOS ---
         let tasks = [];
         try { let pt = JSON.parse(localStorage.getItem('tasks_v6')); if(Array.isArray(pt)) tasks = pt.filter(t => t && t.text !== undefined); } catch(e) { tasks = []; }
         
@@ -668,7 +655,7 @@
 
                 html += `<button onclick="openContextModal()" class="shrink-0 pb-2 transition-all text-sm text-blue-400 font-bold hover:text-blue-300 flex items-center gap-1">+ Nuevo</button>`;
                 container.innerHTML = html;
-            } catch(e) { console.error("Error al renderizar pestañas:", e); }
+            } catch(e) {}
         }
 
         function renderContextButtons() {
@@ -683,21 +670,94 @@
                 });
                 html += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-500 text-gray-500 text-sm transition-all flex items-center">+ Nuevo</button>`;
                 container.innerHTML = html;
-            } catch(e) { console.error("Error botones de contexto:", e); }
+            } catch(e) {}
+        }
+
+        function renderContextManager() {
+            const container = document.getElementById('contextManagerList');
+            if(!container) return;
+            container.innerHTML = '';
+            contexts.forEach(ctx => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-[#12121a] p-3 rounded-lg border border-gray-700">
+                        <div class="flex items-center gap-2">
+                            <span style="color: ${ctx.color}">${ctx.icon}</span>
+                            <span class="text-white text-sm">${ctx.name}</span>
+                        </div>
+                        <button onclick="openContextModal('${ctx.id}')" class="text-blue-400 text-xs font-bold hover:underline">Editar</button>
+                    </div>
+                `;
+            });
         }
 
         function setContext(id) { selectedContext = id; renderContextButtons(); }
-        function openContextModal() { document.getElementById('newContextModal').classList.remove('hidden'); document.getElementById('newContextModal').classList.add('flex'); }
+        
+        function openContextModal(id = null) {
+            const modal = document.getElementById('newContextModal');
+            const title = document.getElementById('modalAreaTitle');
+            const name = document.getElementById('newCtxName');
+            const icon = document.getElementById('newCtxIcon');
+            const color = document.getElementById('newCtxColor');
+            const editId = document.getElementById('editCtxId');
+            const btnDel = document.getElementById('btnDeleteCtx');
+
+            const uLang = (usuariosDB[activeUser] && usuariosDB[activeUser].lang) ? usuariosDB[activeUser].lang : 'es';
+
+            if(id) {
+                const ctx = contexts.find(c => c.id === id);
+                title.innerText = "Modificar Apartado";
+                name.value = ctx.name;
+                icon.value = ctx.icon;
+                color.value = ctx.color;
+                editId.value = ctx.id;
+                btnDel.classList.remove('hidden');
+            } else {
+                title.innerText = dictionary[uLang].modalNewArea || "Crear Nuevo Apartado";
+                name.value = '';
+                icon.value = '';
+                color.value = '#3b82f6';
+                editId.value = '';
+                btnDel.classList.add('hidden');
+            }
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        }
+
         function closeContextModal() { document.getElementById('newContextModal').classList.add('hidden'); document.getElementById('newContextModal').classList.remove('flex'); }
 
-        function saveNewContext() {
-            const name = document.getElementById('newCtxName').value.trim(), icon = document.getElementById('newCtxIcon').value.trim() || '📌', color = document.getElementById('newCtxColor').value;
-            if(!name) return alert("Ponle un nombre al apartado.");
-            const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            contexts.push({ id: newId, name: name, icon: icon, color: color });
+        function saveContext() {
+            const name = document.getElementById('newCtxName').value.trim();
+            const icon = document.getElementById('newCtxIcon').value.trim() || '📌';
+            const color = document.getElementById('newCtxColor').value;
+            const editId = document.getElementById('editCtxId').value;
+
+            if(!name) return alert("Por favor, ponle un nombre al apartado.");
+
+            if(editId) {
+                const ctx = contexts.find(c => c.id === editId);
+                if(ctx) { ctx.name = name; ctx.icon = icon; ctx.color = color; }
+            } else {
+                let newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                if(contexts.some(c => c.id === newId)) newId += Math.floor(Math.random() * 1000);
+                contexts.push({ id: newId, name: name, icon: icon, color: color });
+                selectedContext = newId;
+            }
+
             localStorage.setItem('contexts_v2', JSON.stringify(contexts));
-            setContext(newId); renderTabs(); closeContextModal();
-            document.getElementById('newCtxName').value = ''; document.getElementById('newCtxIcon').value = '';
+            renderTabs(); renderContextButtons(); renderTasks(); closeContextModal();
+            if(document.getElementById('accContexts') && !document.getElementById('accContexts').classList.contains('hidden')) renderContextManager();
+        }
+
+        function deleteContext() {
+            const editId = document.getElementById('editCtxId').value;
+            if(!editId) return;
+            if(confirm("¿Seguro que quieres eliminar este apartado? (Las tareas no se borrarán, pero perderán su categoría)")) {
+                contexts = contexts.filter(c => c.id !== editId);
+                if(selectedContext === editId) selectedContext = contexts[0] ? contexts[0].id : null;
+                if(currentFilter === editId) currentFilter = 'Todos';
+                localStorage.setItem('contexts_v2', JSON.stringify(contexts));
+                renderTabs(); renderContextButtons(); renderTasks(); closeContextModal();
+                if(document.getElementById('accContexts') && !document.getElementById('accContexts').classList.contains('hidden')) renderContextManager();
+            }
         }
 
         function renderTasks() {
@@ -745,15 +805,25 @@
                     `;
                     container.appendChild(div);
                 });
-            } catch(e) { console.error("Error al renderizar tareas", e); }
+            } catch(e) {}
         }
 
         function addTask() {
-            const input = document.getElementById('taskInput'), timeInput = document.getElementById('taskTime'), dateInput = document.getElementById('taskDate');
-            let mins = parseInt(timeInput.value) || 25; if (mins > 120) mins = 120;
-            if (input.value.trim() === '') return alert("Describe tu tarea primero.");
-            tasks.push({ text: input.value, contextId: selectedContext, timeLeft: mins * 60, isRunning: false, date: dateInput.value || null });
-            saveAndRender(); input.value = ''; dateInput.value = ''; toggleTaskCreator(false);
+            try {
+                const input = document.getElementById('taskInput'), timeInput = document.getElementById('taskTime'), dateInput = document.getElementById('taskDate');
+                let mins = parseInt(timeInput.value) || 25; if (mins > 120) mins = 120;
+                
+                if (input.value.trim() === '') return alert("Describe tu tarea primero.");
+                if (!selectedContext && contexts.length > 0) selectedContext = contexts[0].id;
+                
+                tasks.push({ text: input.value, contextId: selectedContext, timeLeft: mins * 60, isRunning: false, date: dateInput.value || null });
+                
+                localStorage.setItem('tasks_v6', JSON.stringify(tasks)); 
+                renderTasks(); 
+                
+                input.value = ''; dateInput.value = ''; timeInput.value = '25'; 
+                toggleTaskCreator(false);
+            } catch(e) { alert("Ocurrió un error al guardar. Inténtalo de nuevo."); }
         }
 
         function setFilter(filter) { currentFilter = filter; renderTabs(); renderTasks(); }
@@ -810,18 +880,17 @@
                 document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
                 document.getElementById('statBestArea').style.color = bestCtxObj ? bestCtxObj.color : '#fff';
                 document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
-            } catch(e) { console.error("Error analiticas:", e); }
+            } catch(e) {}
         }
 
         function saveAndRender() { localStorage.setItem('tasks_v6', JSON.stringify(tasks)); renderTasks(); }
 
-        // --- 5. INICIO DE SESIÓN AUTOMÁTICO SEGURO ---
         setTimeout(() => {
             try {
                 if(localStorage.getItem('focus_user_logged') === 'true' && activeUser && usuariosDB && usuariosDB[activeUser]) {
                     entrarAplicacion();
                 }
-            } catch(e) { console.error("Auto-login error", e); }
+            } catch(e) {}
         }, 150); 
     </script>
 </body>

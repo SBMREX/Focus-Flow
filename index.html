@@ -310,8 +310,9 @@
     </footer>
 
     <script>
-        // --- BASE DE DATOS LOCAL ---
-        let usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {};
+        // --- BASE DE DATOS LOCAL CON PROTECCIÓN ANTI-CRASH ---
+        let usuariosDB = {};
+        try { usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {}; } catch(e) { usuariosDB = {}; }
         let activeUser = localStorage.getItem('focus_active_user') || null;
 
         // --- SISTEMA DE TRADUCCIÓN ---
@@ -355,10 +356,10 @@
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if(dictionary[lang][key]) el.innerHTML = dictionary[lang][key];
+                if(dictionary[lang] && dictionary[lang][key]) el.innerHTML = dictionary[lang][key];
             });
             if(activeUser && usuariosDB[activeUser]) {
-                document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name}</span>`;
+                document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name || activeUser}</span>`;
             }
         }
 
@@ -498,7 +499,7 @@
             actualizarAnaliticas();
         }
 
-        if(localStorage.getItem('focus_user_logged') === 'true' && activeUser) {
+        if(localStorage.getItem('focus_user_logged') === 'true' && activeUser && usuariosDB[activeUser]) {
             entrarAplicacion();
         }
 
@@ -529,6 +530,9 @@
         }
 
         function cargarAjustesUI() {
+            // Protección Anti-Crash
+            if(!usuariosDB[activeUser]) usuariosDB[activeUser] = { lang: 'es', theme: 'dark', avatar: 'icon.png', gender: 'Hombre', name: activeUser };
+            
             const u = usuariosDB[activeUser];
             document.getElementById('headerAvatar').src = u.avatar || 'icon.png';
             document.getElementById('menuAvatar').src = u.avatar || 'icon.png';
@@ -618,12 +622,20 @@
         }
 
         // --- SISTEMA DE TAREAS Y APARTADOS ---
-        let tasks = JSON.parse(localStorage.getItem('tasks_v6')) || [];
-        let historyTasks = JSON.parse(localStorage.getItem('history_v1')) || [];
-        let contexts = JSON.parse(localStorage.getItem('contexts_v2')) || [
-            { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' },
-            { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' }
-        ];
+        let tasks = [];
+        try { tasks = JSON.parse(localStorage.getItem('tasks_v6')) || []; if(!Array.isArray(tasks)) tasks = []; } catch(e) { tasks = []; }
+        
+        let historyTasks = [];
+        try { historyTasks = JSON.parse(localStorage.getItem('history_v1')) || []; if(!Array.isArray(historyTasks)) historyTasks = []; } catch(e) { historyTasks = []; }
+        
+        let contexts = [];
+        try { contexts = JSON.parse(localStorage.getItem('contexts_v2')); if(!Array.isArray(contexts) || contexts.length === 0) throw "empty"; } 
+        catch(e) { 
+            contexts = [
+                { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' },
+                { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' }
+            ]; 
+        }
 
         let currentFilter = 'Todos';
         let selectedContext = contexts[0].id;
@@ -656,7 +668,11 @@
             const isLight = document.body.classList.contains('light-mode');
             const defaultTxtColor = isLight ? 'text-gray-900 border-gray-900' : 'text-white border-white';
             
-            container.innerHTML = `<button onclick="setFilter('Todos')" class="shrink-0 pb-2 transition-all text-sm ${currentFilter === 'Todos' ? `border-b-2 font-bold ${defaultTxtColor}` : 'text-gray-500 hover:text-gray-400'}">${dictionary[usuariosDB[activeUser]?.lang || 'es'].tabOverview}</button>`;
+            // Protección de idioma en pestañas
+            const uLang = (usuariosDB[activeUser] && usuariosDB[activeUser].lang) ? usuariosDB[activeUser].lang : 'es';
+            const tabName = dictionary[uLang].tabOverview;
+
+            container.innerHTML = `<button onclick="setFilter('Todos')" class="shrink-0 pb-2 transition-all text-sm ${currentFilter === 'Todos' ? `border-b-2 font-bold ${defaultTxtColor}` : 'text-gray-500 hover:text-gray-400'}">${tabName}</button>`;
             
             contexts.forEach(ctx => {
                 const isActive = currentFilter === ctx.id;

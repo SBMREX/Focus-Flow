@@ -423,4 +423,403 @@
 
         function validarPassword() {
             const p = document.getElementById('regPass').value;
-            const reqLen = document.getElementById('reqLen'), reqCap = document.getElementById('
+            const reqLen = document.getElementById('reqLen'), reqCap = document.getElementById('reqCap'), reqNum = document.getElementById('reqNum');
+            p.length >= 8 ? (reqLen.className = "req-pass", reqLen.innerText = "✓ Mínimo 8 caracteres") : (reqLen.className = "req-fail", reqLen.innerText = "○ Mínimo 8 caracteres");
+            /[A-Z]/.test(p) ? (reqCap.className = "req-pass", reqCap.innerText = "✓ Al menos 1 mayúscula") : (reqCap.className = "req-fail", reqCap.innerText = "○ Al menos 1 mayúscula");
+            /[0-9]/.test(p) ? (reqNum.className = "req-pass", reqNum.innerText = "✓ Al menos 1 número") : (reqNum.className = "req-fail", reqNum.innerText = "○ Al menos 1 número");
+            return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p);
+        }
+
+        function crearCuenta() {
+            const user = document.getElementById('regUser').value.trim();
+            const gender = document.getElementById('regGender').value;
+            const pass = document.getElementById('regPass').value;
+            const passConf = document.getElementById('regPassConfirm').value;
+
+            if(!user || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
+            if(usuariosDB[user]) return alert('Este usuario ya existe.');
+            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos.');
+            if(pass !== passConf) return alert('Las contraseñas no coinciden.');
+
+            usuariosDB[user] = { pass: pass, name: user, gender: gender, age: '', birthday: '', avatar: 'icon.png', lang: 'es', theme: 'dark' };
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            
+            alert('¡Cuenta creada! Por favor inicia sesión.');
+            document.getElementById('regUser').value = ''; document.getElementById('regPass').value = ''; document.getElementById('regPassConfirm').value = '';
+            mostrarLogin();
+        }
+
+        function iniciarSesion() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if(!user || !pass) return alert('Ingresa usuario y contraseña.');
+            if(!usuariosDB[user]) return alert('Usuario no encontrado.');
+            if(usuariosDB[user].pass !== pass) return alert('Contraseña incorrecta.');
+            
+            activeUser = user;
+            if(document.getElementById('keepLogged').checked) {
+                localStorage.setItem('focus_user_logged', 'true');
+                localStorage.setItem('focus_active_user', activeUser);
+            }
+            entrarAplicacion();
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('focus_user_logged');
+            localStorage.removeItem('focus_active_user');
+            activeUser = null;
+            document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('settingsModal').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginPass').value = '';
+            document.body.classList.remove('light-mode'); 
+            
+            ['accProfile', 'accCustom', 'accSecurity'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById('icon-' + id).style.transform = 'rotate(0deg)';
+            });
+        }
+
+        function entrarAplicacion() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('registerScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            cargarAjustesUI();
+            
+            const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+            const daily = quotes[dayOfYear % quotes.length];
+            document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
+            document.getElementById('dailyAuthor').innerText = `- ${daily.author}`;
+            
+            renderTabs();
+            renderContextButtons();
+            renderTasks();
+            actualizarAnaliticas();
+        }
+
+        if(localStorage.getItem('focus_user_logged') === 'true' && activeUser && usuariosDB[activeUser]) {
+            entrarAplicacion();
+        }
+
+        // --- LÓGICA DEL MENÚ DE CONFIGURACIÓN Y ACORDEÓN ---
+        function toggleSettingsMenu(show) {
+            const modal = document.getElementById('settingsModal');
+            if(show) {
+                cargarAjustesUI();
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden'); modal.classList.remove('flex');
+            }
+        }
+
+        function toggleAccordion(id) {
+            const sections = ['accProfile', 'accCustom', 'accSecurity'];
+            sections.forEach(sec => {
+                const el = document.getElementById(sec);
+                const icon = document.getElementById('icon-' + sec);
+                if (sec === id) {
+                    el.classList.toggle('hidden');
+                    icon.style.transform = el.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+                } else {
+                    el.classList.add('hidden');
+                    document.getElementById('icon-' + sec).style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
+        function cargarAjustesUI() {
+            // Protección Anti-Crash
+            if(!usuariosDB[activeUser]) usuariosDB[activeUser] = { lang: 'es', theme: 'dark', avatar: 'icon.png', gender: 'Hombre', name: activeUser };
+            
+            const u = usuariosDB[activeUser];
+            document.getElementById('headerAvatar').src = u.avatar || 'icon.png';
+            document.getElementById('menuAvatar').src = u.avatar || 'icon.png';
+            aplicarIdioma(u.lang || 'es');
+            
+            document.getElementById('setProfileName').value = u.name || activeUser;
+            document.getElementById('setAge').value = u.age || '';
+            document.getElementById('setGender').value = u.gender || 'Hombre';
+            document.getElementById('setBirthday').value = u.birthday || '';
+            
+            document.getElementById('setLanguage').value = u.lang || 'es';
+            document.getElementById('setTheme').value = u.theme || 'dark';
+            aplicarTema(u.theme || 'dark');
+        }
+
+        function actualizarFoto(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    usuariosDB[activeUser].avatar = base64Image;
+                    localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+                    document.getElementById('headerAvatar').src = base64Image;
+                    document.getElementById('menuAvatar').src = base64Image;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function guardarPerfil() {
+            const u = usuariosDB[activeUser];
+            u.name = document.getElementById('setProfileName').value.trim() || activeUser;
+            u.age = document.getElementById('setAge').value;
+            u.gender = document.getElementById('setGender').value;
+            u.birthday = document.getElementById('setBirthday').value;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            aplicarIdioma(u.lang || 'es'); 
+            alert("Perfil actualizado correctamente.");
+        }
+
+        function guardarSeguridad() {
+            const newUser = document.getElementById('setNewUser').value.trim();
+            const newPass = document.getElementById('setNewPass').value;
+            const confirmPass = document.getElementById('setConfirmPass').value;
+
+            if(!newPass || !confirmPass) return alert("Llena los campos de contraseña.");
+            if(newPass !== confirmPass) return alert("Las contraseñas no coinciden.");
+            
+            let currentData = usuariosDB[activeUser];
+            if(newUser && newUser !== activeUser) {
+                if(usuariosDB[newUser]) return alert("Ese usuario ya está en uso.");
+                usuariosDB[newUser] = currentData;
+                delete usuariosDB[activeUser];
+                activeUser = newUser;
+                if(localStorage.getItem('focus_user_logged') === 'true') {
+                    localStorage.setItem('focus_active_user', activeUser);
+                }
+            }
+
+            usuariosDB[activeUser].pass = newPass;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            
+            document.getElementById('setNewUser').value = '';
+            document.getElementById('setNewPass').value = '';
+            document.getElementById('setConfirmPass').value = '';
+            alert("Credenciales de seguridad actualizadas.");
+        }
+
+        function cambiarIdioma() {
+            const lang = document.getElementById('setLanguage').value;
+            usuariosDB[activeUser].lang = lang;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            aplicarIdioma(lang);
+        }
+
+        function cambiarTema() {
+            const theme = document.getElementById('setTheme').value;
+            usuariosDB[activeUser].theme = theme;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            aplicarTema(theme);
+        }
+
+        function aplicarTema(theme) {
+            if(theme === 'light') document.body.classList.add('light-mode');
+            else document.body.classList.remove('light-mode');
+        }
+
+        // --- SISTEMA DE TAREAS Y APARTADOS ---
+        let tasks = [];
+        try { tasks = JSON.parse(localStorage.getItem('tasks_v6')) || []; if(!Array.isArray(tasks)) tasks = []; } catch(e) { tasks = []; }
+        
+        let historyTasks = [];
+        try { historyTasks = JSON.parse(localStorage.getItem('history_v1')) || []; if(!Array.isArray(historyTasks)) historyTasks = []; } catch(e) { historyTasks = []; }
+        
+        let contexts = [];
+        try { contexts = JSON.parse(localStorage.getItem('contexts_v2')); if(!Array.isArray(contexts) || contexts.length === 0) throw "empty"; } 
+        catch(e) { 
+            contexts = [
+                { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' },
+                { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' }
+            ]; 
+        }
+
+        let currentFilter = 'Todos';
+        let selectedContext = contexts[0].id;
+        let interval;
+
+        function toggleTaskCreator(show) {
+            const modal = document.getElementById('taskCreatorModal');
+            if(show) { modal.classList.remove('hidden'); modal.classList.add('flex'); } 
+            else { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+        }
+
+        function switchMainView(view) {
+            const btnT = document.getElementById('navTasks'), btnS = document.getElementById('navStats');
+            const vT = document.getElementById('viewTasks'), vS = document.getElementById('viewStats'), fab = document.getElementById('fabBtn');
+
+            if(view === 'tasks') {
+                btnT.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
+                btnS.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
+                vT.classList.remove('hidden'); vS.classList.add('hidden'); fab.classList.remove('hidden');
+            } else {
+                btnS.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
+                btnT.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
+                vS.classList.remove('hidden'); vT.classList.add('hidden'); fab.classList.add('hidden');
+                actualizarAnaliticas();
+            }
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabContainer');
+            const isLight = document.body.classList.contains('light-mode');
+            const defaultTxtColor = isLight ? 'text-gray-900 border-gray-900' : 'text-white border-white';
+            
+            // Protección de idioma en pestañas
+            const uLang = (usuariosDB[activeUser] && usuariosDB[activeUser].lang) ? usuariosDB[activeUser].lang : 'es';
+            const tabName = dictionary[uLang].tabOverview;
+
+            container.innerHTML = `<button onclick="setFilter('Todos')" class="shrink-0 pb-2 transition-all text-sm ${currentFilter === 'Todos' ? `border-b-2 font-bold ${defaultTxtColor}` : 'text-gray-500 hover:text-gray-400'}">${tabName}</button>`;
+            
+            contexts.forEach(ctx => {
+                const isActive = currentFilter === ctx.id;
+                container.innerHTML += `<button onclick="setFilter('${ctx.id}')" style="${isActive ? `border-bottom: 2px solid ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : ''}" class="shrink-0 pb-2 transition-all text-sm ${!isActive ? 'text-gray-500 hover:text-gray-400' : ''}">${ctx.icon} ${ctx.name}</button>`;
+            });
+
+            container.innerHTML += `<button onclick="openContextModal()" class="shrink-0 pb-2 transition-all text-sm text-blue-400 font-bold hover:text-blue-300 flex items-center gap-1">+ Nuevo</button>`;
+        }
+
+        function renderContextButtons() {
+            const container = document.getElementById('contextButtons');
+            container.innerHTML = '';
+            contexts.forEach(ctx => {
+                const isSelected = selectedContext === ctx.id;
+                const style = isSelected ? `background-color: ${ctx.color}30; border-color: ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : `border-color: #374151; color: #9ca3af;`;
+                container.innerHTML += `<button onclick="setContext('${ctx.id}')" style="${style}" class="px-3 py-1.5 rounded-xl border text-sm transition-all flex items-center gap-1">${ctx.icon} ${ctx.name}</button>`;
+            });
+            container.innerHTML += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-500 text-gray-500 text-sm transition-all flex items-center">+ Nuevo</button>`;
+        }
+
+        function setContext(id) { selectedContext = id; renderContextButtons(); }
+        function openContextModal() { document.getElementById('newContextModal').classList.remove('hidden'); document.getElementById('newContextModal').classList.add('flex'); }
+        function closeContextModal() { document.getElementById('newContextModal').classList.add('hidden'); document.getElementById('newContextModal').classList.remove('flex'); }
+
+        function saveNewContext() {
+            const name = document.getElementById('newCtxName').value.trim(), icon = document.getElementById('newCtxIcon').value.trim() || '📌', color = document.getElementById('newCtxColor').value;
+            if(!name) return alert("Ponle un nombre.");
+            const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            contexts.push({ id: newId, name: name, icon: icon, color: color });
+            localStorage.setItem('contexts_v2', JSON.stringify(contexts));
+            setContext(newId); 
+            renderTabs(); 
+            closeContextModal();
+            document.getElementById('newCtxName').value = '';
+            document.getElementById('newCtxIcon').value = '';
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('taskList'), emptyState = document.getElementById('emptyState');
+            container.innerHTML = '';
+            let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
+            
+            if(filtered.length === 0) { emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); return; } 
+            else { emptyState.classList.add('hidden'); emptyState.classList.remove('flex'); }
+
+            const today = new Date().toISOString().split('T')[0];
+            filtered.forEach((t) => {
+                const globalIndex = tasks.indexOf(t), mins = Math.floor(t.timeLeft / 60), secs = t.timeLeft % 60;
+                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Des', icon: '❓', color: '#6b7280' };
+                
+                let dateBadge = '';
+                if (t.date) {
+                    const isOverdue = t.date <= today;
+                    const badgeClass = isOverdue ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-gray-800/50 text-gray-400 border-gray-700/50';
+                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeClass} flex items-center gap-1">${isOverdue ? '⚠️' : '📅'} ${t.date}</span>`;
+                }
+
+                const div = document.createElement('div');
+                div.className = "glass-card p-5 rounded-2xl flex flex-col gap-4 animate__animated animate__fadeIn";
+                div.innerHTML = `
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-[10px] px-2 py-0.5 rounded-md border font-bold flex items-center gap-1" style="background-color: ${taskContext.color}20; border-color: ${taskContext.color}50; color: ${taskContext.color};">${taskContext.icon} ${taskContext.name.toUpperCase()}</span>
+                                ${dateBadge}
+                            </div>
+                            <p class="text-base font-medium leading-snug">${t.text}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-2xl font-mono ${t.isRunning ? 'timer-active' : 'text-gray-500'}">${mins}:${secs < 10 ? '0' : ''}${secs}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-1">
+                        <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl border border-gray-500/30 text-xs font-semibold tracking-wide hover:bg-gray-500/10 transition-colors">
+                            ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
+                        </button>
+                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-transform" style="background-color: ${taskContext.color}">HECHO ✓</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('taskInput'), timeInput = document.getElementById('taskTime'), dateInput = document.getElementById('taskDate');
+            let mins = parseInt(timeInput.value) || 25; if (mins > 120) mins = 120;
+            if (input.value.trim() === '') return alert("Describe tu tarea primero.");
+            tasks.push({ text: input.value, contextId: selectedContext, timeLeft: mins * 60, isRunning: false, date: dateInput.value || null });
+            saveAndRender(); input.value = ''; dateInput.value = ''; toggleTaskCreator(false);
+        }
+
+        function setFilter(filter) { currentFilter = filter; renderTabs(); renderTasks(); }
+
+        function toggleTimer(index) {
+            tasks.forEach((t, i) => { if(i !== index) t.isRunning = false; });
+            tasks[index].isRunning = !tasks[index].isRunning; clearInterval(interval);
+            if (tasks[index].isRunning) {
+                interval = setInterval(() => {
+                    if (tasks[index].timeLeft > 0) { tasks[index].timeLeft--; saveAndRender(); } 
+                    else { clearInterval(interval); tasks[index].isRunning = false; saveAndRender(); }
+                }, 1000);
+            }
+            saveAndRender();
+        }
+
+        function completeTask(index) {
+            const completed = tasks[index];
+            historyTasks.push({ text: completed.text, contextId: completed.contextId, completedAt: new Date().toISOString() });
+            localStorage.setItem('history_v1', JSON.stringify(historyTasks));
+            tasks.splice(index, 1); clearInterval(interval); saveAndRender();
+        }
+
+        function borrarHistorial() {
+            if(confirm("¿Seguro que quieres borrar todas tus analíticas?")) {
+                historyTasks = []; localStorage.setItem('history_v1', JSON.stringify(historyTasks)); actualizarAnaliticas();
+            }
+        }
+
+        function actualizarAnaliticas() {
+            document.getElementById('statTotal').innerText = historyTasks.length;
+            const cList = document.getElementById('historyList'); cList.innerHTML = '';
+            
+            if(historyTasks.length === 0) {
+                cList.innerHTML = '<p class="text-sm text-gray-500 italic">Aún no hay tareas completadas.</p>';
+                document.getElementById('statBestHour').innerText = "--:--"; document.getElementById('statBestArea').innerText = "--"; document.getElementById('statWorstArea').innerText = "--";
+                return;
+            }
+
+            let hoursCount = {}, contextCount = {};
+            historyTasks.slice().reverse().forEach(t => {
+                const d = new Date(t.completedAt), ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌', color: '#6b7280' };
+                cList.innerHTML += `<div class="bg-gray-500/10 p-3 rounded-xl flex justify-between items-center mb-2"><div class="flex items-center gap-2"><span style="color: ${ctx.color}">${ctx.icon}</span><p class="text-sm line-through opacity-70">${t.text}</p></div><span class="text-[10px] opacity-50">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
+                hoursCount[d.getHours()] = (hoursCount[d.getHours()] || 0) + 1; contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
+            });
+
+            let bestHour = Object.keys(hoursCount).reduce((a, b) => hoursCount[a] > hoursCount[b] ? a : b);
+            document.getElementById('statBestHour').innerText = `${bestHour}:00`;
+            let bestCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] > contextCount[b] ? a : b);
+            let worstCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] < contextCount[b] ? a : b);
+            
+            const bestCtxObj = contexts.find(c => c.id === bestCtxId), worstCtxObj = contexts.find(c => c.id === worstCtxId);
+            document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
+            document.getElementById('statBestArea').style.color = bestCtxObj ? bestCtxObj.color : '#fff';
+            document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
+        }
+
+        function saveAndRender() { localStorage.setItem('tasks_v6', JSON.stringify(tasks)); renderTasks(); }
+    </script>
+</body>
+</html>

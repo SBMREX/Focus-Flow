@@ -15,7 +15,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     
     <style>
-        body { background: #09090b; color: #f4f4f5; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; }
+        /* TEMA OSCURO (Por defecto) */
+        body { background: #09090b; color: #f4f4f5; min-height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s ease; }
         .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); }
         .glass-card { background: linear-gradient(145deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.4) 100%); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); }
         .tab-active { border-bottom: 2px solid #60a5fa; color: #60a5fa; font-weight: 600; }
@@ -25,6 +26,17 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .req-pass { color: #10b981; }
         .req-fail { color: #6b7280; }
+
+        /* TEMA CLARO (Modo Blanco) */
+        body.light-mode { background: #f3f4f6 !important; color: #111827 !important; }
+        body.light-mode .glass { background: rgba(255, 255, 255, 0.8) !important; border: 1px solid rgba(0,0,0,0.1) !important; }
+        body.light-mode .glass-card { background: linear-gradient(145deg, #ffffff 0%, #f9fafb 100%) !important; border: 1px solid rgba(0,0,0,0.05) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; color: #1f2937 !important; }
+        body.light-mode input, body.light-mode select { background-color: #ffffff !important; border-color: #d1d5db !important; color: #111827 !important; }
+        body.light-mode .text-white { color: #111827 !important; }
+        body.light-mode .text-gray-400 { color: #4b5563 !important; }
+        body.light-mode .text-gray-300 { color: #374151 !important; }
+        body.light-mode ::-webkit-calendar-picker-indicator { filter: invert(0) !important; opacity: 0.7 !important; }
+        body.light-mode .bg-\[\#12121a\] { background-color: #ffffff !important; }
     </style>
 </head>
 <body class="p-4 flex flex-col min-h-screen relative overflow-x-hidden">
@@ -33,7 +45,7 @@
         <div class="text-center mb-8">
             <img src="icon.png" alt="Focus Flow Logo" class="w-24 h-24 mx-auto mb-4 rounded-3xl shadow-lg shadow-blue-500/20">
             <h1 class="text-5xl font-black tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent drop-shadow-sm mb-2">Focus Flow</h1>
-            <p class="text-gray-400 text-sm">Bienvenido de nuevo</p>
+            <p data-i18n="welcome" class="text-gray-400 text-sm">Bienvenido de nuevo</p>
         </div>
 
         <div class="glass p-8 rounded-3xl shadow-2xl">
@@ -42,18 +54,18 @@
             
             <div class="flex items-center gap-3 mb-8">
                 <input type="checkbox" id="keepLogged" class="w-4 h-4 accent-blue-500 bg-gray-700 border-gray-600 rounded">
-                <label for="keepLogged" class="text-sm text-gray-300">Mantener sesión iniciada</label>
+                <label for="keepLogged" data-i18n="keepSession" class="text-sm text-gray-300">Mantener sesión iniciada</label>
             </div>
 
-            <button onclick="iniciarSesion()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95 mb-4">INICIAR SESIÓN</button>
-            <p class="text-center text-sm text-gray-400">¿No tienes cuenta? <button onclick="mostrarRegistro()" class="text-blue-400 font-bold hover:underline">Regístrate aquí</button></p>
+            <button onclick="iniciarSesion()" data-i18n="btnLogin" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold tracking-widest shadow-lg shadow-blue-900/20 transition-all transform active:scale-95 mb-4">INICIAR SESIÓN</button>
+            <p class="text-center text-sm text-gray-400"><span data-i18n="noAccount">¿No tienes cuenta?</span> <button onclick="mostrarRegistro()" data-i18n="btnRegisterHere" class="text-blue-400 font-bold hover:underline">Regístrate aquí</button></p>
         </div>
     </div>
 
     <div id="registerScreen" class="max-w-md mx-auto w-full flex-grow flex flex-col justify-center animate__animated animate__fadeIn hidden">
         <div class="text-center mb-6">
-            <h2 class="text-3xl font-black text-white mb-2">Crear Cuenta</h2>
-            <p class="text-gray-400 text-xs">Configura tu espacio personal</p>
+            <h2 data-i18n="createAccount" class="text-3xl font-black text-white mb-2">Crear Cuenta</h2>
+            <p data-i18n="setupSpace" class="text-gray-400 text-xs">Configura tu espacio personal</p>
         </div>
 
         <div class="glass p-6 rounded-3xl shadow-2xl space-y-4">
@@ -68,29 +80,30 @@
 
             <div>
                 <input id="regPass" type="password" onkeyup="validarPassword()" placeholder="Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm mb-2">
-                
                 <div class="text-xs bg-black/40 p-3 rounded-lg space-y-1 mb-2">
                     <p id="reqLen" class="req-fail">○ Mínimo 8 caracteres</p>
                     <p id="reqCap" class="req-fail">○ Al menos 1 mayúscula</p>
                     <p id="reqNum" class="req-fail">○ Al menos 1 número</p>
                 </div>
-
                 <input id="regPassConfirm" type="password" placeholder="Confirmar Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm">
             </div>
 
-            <button onclick="crearCuenta()" class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold tracking-widest shadow-lg mt-4 transition-all transform active:scale-95">REGISTRARSE</button>
-            <p class="text-center text-sm text-gray-400 mt-4">¿Ya tienes cuenta? <button onclick="mostrarLogin()" class="text-blue-400 font-bold hover:underline">Inicia sesión</button></p>
+            <button onclick="crearCuenta()" data-i18n="btnRegister" class="w-full py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold tracking-widest shadow-lg mt-4 transition-all transform active:scale-95">REGISTRARSE</button>
+            <p class="text-center text-sm text-gray-400 mt-4"><span data-i18n="haveAccount">¿Ya tienes cuenta?</span> <button onclick="mostrarLogin()" data-i18n="btnLoginHere" class="text-blue-400 font-bold hover:underline">Inicia sesión</button></p>
         </div>
     </div>
 
     <div id="mainApp" class="max-w-md mx-auto w-full flex-grow hidden animate__animated animate__fadeIn">
         
         <header class="mb-6 mt-2 flex justify-between items-center">
-            <div onclick="editarNombre()" class="cursor-pointer">
-                <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Focus Flow</h1>
-                <p id="userGreeting" class="text-xs text-gray-400 mt-1">Hola, <span class="font-bold text-white hover:text-blue-400 transition-colors">Usuario</span></p>
+            <div class="flex items-center gap-3">
+                <img id="headerAvatar" src="icon.png" class="w-12 h-12 rounded-full object-cover border-2 border-blue-500 shadow-lg shadow-blue-500/20">
+                <div>
+                    <h1 class="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent leading-none">Focus Flow</h1>
+                    <p id="userGreeting" class="text-xs text-gray-400 mt-1">Hola, <span class="font-bold text-white">Usuario</span></p>
+                </div>
             </div>
-            <button onclick="cerrarSesion()" class="text-xs text-red-400 border border-red-500/30 px-3 py-1 rounded-lg hover:bg-red-500/10">Salir</button>
+            <button onclick="toggleSettingsMenu(true)" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-xl transition-all border border-white/10 shadow-sm">⚙️</button>
         </header>
 
         <div class="glass-card p-4 rounded-2xl mb-6 border-l-4 border-l-blue-500">
@@ -99,153 +112,257 @@
         </div>
 
         <div class="flex bg-black/40 rounded-xl p-1 mb-6">
-            <button id="navTasks" onclick="switchMainView('tasks')" class="flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all">Visión General</button>
-            <button id="navStats" onclick="switchMainView('stats')" class="flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all">Mi Progreso</button>
+            <button id="navTasks" onclick="switchMainView('tasks')" data-i18n="tabOverview" class="flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all">Visión General</button>
+            <button id="navStats" onclick="switchMainView('stats')" data-i18n="tabProgress" class="flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all">Mi Progreso</button>
         </div>
 
         <div id="viewTasks">
             <div id="tabContainer" class="flex overflow-x-auto no-scrollbar mb-6 border-b border-gray-800/50 px-2 gap-4 whitespace-nowrap pb-1"></div>
-            
             <div id="taskList" class="space-y-4 pb-24"></div>
             
             <div id="emptyState" class="hidden flex-col items-center justify-center py-10 opacity-50">
                 <span class="text-4xl mb-2">✨</span>
-                <p class="text-sm">Todo despejado. Toca el + para empezar.</p>
+                <p data-i18n="emptyState" class="text-sm">Todo despejado. Toca el + para empezar.</p>
             </div>
         </div>
 
         <div id="viewStats" class="hidden pb-24">
-            <h2 class="text-xl font-bold mb-4 text-blue-400">Analíticas de Productividad</h2>
+            <h2 data-i18n="titleAnalytics" class="text-xl font-bold mb-4 text-blue-400">Analíticas de Productividad</h2>
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="glass-card p-4 rounded-2xl text-center">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Mejor Hora</p>
+                    <p data-i18n="statBestHour" class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Mejor Hora</p>
                     <p id="statBestHour" class="text-2xl font-black text-emerald-400">--:--</p>
                 </div>
                 <div class="glass-card p-4 rounded-2xl text-center">
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Total Hechas</p>
+                    <p data-i18n="statTotalDone" class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Total Hechas</p>
                     <p id="statTotal" class="text-2xl font-black text-blue-400">0</p>
                 </div>
                 <div class="glass-card p-4 rounded-2xl text-center col-span-2">
                     <div class="flex justify-between items-center mb-2">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área Destacada</p>
+                        <p data-i18n="statBestArea" class="text-[10px] text-gray-400 uppercase tracking-widest">Área Destacada</p>
                         <span id="statBestArea" class="text-sm font-bold text-white bg-green-500/20 px-2 py-1 rounded border border-green-500/30">--</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest">Área a Mejorar</p>
+                        <p data-i18n="statWorstArea" class="text-[10px] text-gray-400 uppercase tracking-widest">Área a Mejorar</p>
                         <span id="statWorstArea" class="text-sm font-bold text-gray-300 bg-red-500/20 px-2 py-1 rounded border border-red-500/30">--</span>
                     </div>
                 </div>
             </div>
             <div class="flex justify-between items-end mb-4">
-                <h3 class="font-bold text-gray-300">Historial Reciente</h3>
-                <button onclick="borrarHistorial()" class="text-[10px] text-red-400 uppercase tracking-wider hover:underline">Borrar Historial</button>
+                <h3 data-i18n="historyTitle" class="font-bold text-gray-300">Historial Reciente</h3>
+                <button onclick="borrarHistorial()" data-i18n="btnDeleteHistory" class="text-[10px] text-red-400 uppercase tracking-wider hover:underline">Borrar Historial</button>
             </div>
             <div id="historyList" class="space-y-2"></div>
         </div>
 
         <button id="fabBtn" onclick="toggleTaskCreator(true)" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full shadow-lg text-white text-3xl font-light flex items-center justify-center transition-transform active:scale-90 z-40 shadow-blue-900/50 pb-1">+</button>
+    </div>
 
+    <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex-col justify-end">
+        <div class="glass p-6 rounded-t-3xl shadow-2xl animate__animated animate__slideInUp w-full max-w-md mx-auto h-auto max-h-[90vh] overflow-y-auto no-scrollbar pb-10">
+            
+            <div class="flex justify-between items-center mb-6">
+                <h2 data-i18n="menuSettings" class="text-2xl font-black text-white">Configuración</h2>
+                <button onclick="toggleSettingsMenu(false)" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center font-bold">✕</button>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl p-4 mb-4 border border-white/10">
+                <h3 data-i18n="secProfile" class="text-blue-400 font-bold mb-4 text-sm uppercase tracking-wider">👤 Perfil</h3>
+                <div class="flex items-center gap-4 mb-4">
+                    <label class="cursor-pointer relative group">
+                        <img id="menuAvatar" src="icon.png" class="w-16 h-16 rounded-full object-cover border border-gray-600">
+                        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="text-xl">📷</span>
+                        </div>
+                        <input type="file" id="uploadAvatar" accept="image/*" class="hidden" onchange="actualizarFoto(event)">
+                    </label>
+                    <div class="flex-1">
+                        <input id="setProfileName" type="text" placeholder="Nombre" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <span data-i18n="lblAge" class="text-[10px] text-gray-500">EDAD</span>
+                        <input id="setAge" type="number" placeholder="Ej. 25" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none">
+                    </div>
+                    <div>
+                        <span data-i18n="lblGender" class="text-[10px] text-gray-500">SEXO</span>
+                        <select id="setGender" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                            <option value="Hombre">Hombre</option>
+                            <option value="Mujer">Mujer</option>
+                            <option value="No binario">No binario</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <span data-i18n="lblBirthday" class="text-[10px] text-gray-500">FECHA DE CUMPLEAÑOS</span>
+                    <input id="setBirthday" type="date" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                </div>
+                <button onclick="guardarPerfil()" data-i18n="btnSaveProfile" class="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm font-bold hover:bg-blue-600/40 transition-colors">Guardar Perfil</button>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl p-4 mb-4 border border-white/10">
+                <h3 data-i18n="secCustom" class="text-purple-400 font-bold mb-4 text-sm uppercase tracking-wider">🎨 Personalización</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <span data-i18n="lblLanguage" class="text-[10px] text-gray-500">IDIOMA</span>
+                        <select id="setLanguage" onchange="cambiarIdioma()" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                            <option value="es">Español</option>
+                            <option value="en">English</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <div>
+                        <span data-i18n="lblTheme" class="text-[10px] text-gray-500">TEMA</span>
+                        <select id="setTheme" onchange="cambiarTema()" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                            <option value="dark">🌙 Oscuro</option>
+                            <option value="light">☀️ Claro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
+                <h3 data-i18n="secSecurity" class="text-emerald-400 font-bold mb-4 text-sm uppercase tracking-wider">🔒 Seguridad</h3>
+                <div class="space-y-3 mb-4">
+                    <input id="setNewUser" type="text" placeholder="Nuevo Usuario (Credencial)" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+                    <input id="setNewPass" type="password" placeholder="Nueva Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+                    <input id="setConfirmPass" type="password" placeholder="Confirmar Nueva Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+                </div>
+                <button onclick="guardarSeguridad()" data-i18n="btnSaveSecurity" class="w-full py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-bold hover:bg-emerald-600/40 transition-colors">Actualizar Credenciales</button>
+            </div>
+
+            <button onclick="cerrarSesion()" data-i18n="btnLogout" class="w-full py-3 bg-red-600/20 text-red-500 border border-red-500/50 rounded-xl font-bold tracking-widest hover:bg-red-600/40 transition-colors">CERRAR SESIÓN</button>
+        </div>
     </div>
 
     <div id="taskCreatorModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-end">
         <div class="glass p-6 rounded-t-3xl shadow-2xl animate__animated animate__slideInUp w-full max-w-md mx-auto h-auto max-h-[85vh] overflow-y-auto no-scrollbar">
-            
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Nueva Tarea</h3>
+                <h3 data-i18n="modalNewTask" class="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Nueva Tarea</h3>
                 <button onclick="toggleTaskCreator(false)" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center font-bold">✕</button>
             </div>
-
             <input id="taskInput" type="text" placeholder="¿Qué necesitas hacer?" class="w-full bg-transparent border-b border-gray-700 p-2 outline-none mb-6 text-xl text-white placeholder-gray-500 focus:border-blue-500 transition-colors">
-            
             <div class="flex flex-wrap items-end justify-between gap-4 mb-6">
                 <div class="flex flex-col">
-                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">MINUTOS (FOCO)</span>
+                    <span data-i18n="lblMinutes" class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">MINUTOS</span>
                     <input id="taskTime" type="number" min="1" max="120" value="25" class="bg-[#12121a] rounded-xl px-3 py-3 w-24 text-center text-blue-400 font-mono font-bold border border-gray-700 outline-none focus:border-blue-500">
                 </div>
                 <div class="flex flex-col flex-grow">
-                    <span class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA (OPCIONAL)</span>
+                    <span data-i18n="lblDate" class="text-[10px] text-gray-500 font-semibold mb-1 tracking-wider">FECHA (OPCIONAL)</span>
                     <input id="taskDate" type="date" class="bg-[#12121a] rounded-xl px-3 py-3 w-full text-gray-300 text-sm border border-gray-700 outline-none focus:border-blue-500">
                 </div>
             </div>
-
             <div class="flex flex-col mb-8">
-                <span class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">ELIGE EL APARTADO</span>
+                <span data-i18n="lblChooseContext" class="text-[10px] text-gray-500 font-semibold mb-2 tracking-wider">ELIGE EL APARTADO</span>
                 <div id="contextButtons" class="flex flex-wrap gap-2"></div>
             </div>
-
-            <button onclick="addTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95 transition-all">GUARDAR TAREA</button>
+            <button onclick="addTask()" data-i18n="btnSaveTask" class="w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-sm tracking-widest shadow-lg active:scale-95 transition-all">GUARDAR TAREA</button>
         </div>
     </div>
 
     <div id="newContextModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex-col justify-center items-center px-4">
         <div class="glass p-6 rounded-3xl shadow-2xl animate__animated animate__zoomIn w-full max-w-sm">
-            <h3 class="text-lg font-bold text-white mb-4">Crear Nuevo Apartado</h3>
-            
-            <input id="newCtxName" type="text" placeholder="Nombre (ej. Auto, Tienda...)" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm mb-4">
-            
+            <h3 data-i18n="modalNewArea" class="text-lg font-bold text-white mb-4">Crear Nuevo Apartado</h3>
+            <input id="newCtxName" type="text" placeholder="Nombre (ej. Auto...)" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white focus:border-blue-500 text-sm mb-4">
             <div class="flex gap-4 mb-6">
                 <div class="flex-1">
                     <span class="text-[10px] text-gray-500 font-semibold mb-1 block">EMOJI</span>
                     <input id="newCtxIcon" type="text" placeholder="🚗" class="w-full bg-[#12121a] border border-gray-700 rounded-xl p-3 outline-none text-white text-center text-lg">
                 </div>
                 <div class="flex-1">
-                    <span class="text-[10px] text-gray-500 font-semibold mb-1 block">COLOR</span>
+                    <span data-i18n="lblColor" class="text-[10px] text-gray-500 font-semibold mb-1 block">COLOR</span>
                     <input id="newCtxColor" type="color" value="#3b82f6" class="w-full h-[52px] bg-[#12121a] border border-gray-700 rounded-xl cursor-pointer p-1">
                 </div>
             </div>
-
             <div class="flex gap-3">
-                <button onclick="closeContextModal()" class="flex-1 py-3 rounded-xl border border-gray-600 text-gray-300 text-sm font-bold">Cancelar</button>
-                <button onclick="saveNewContext()" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold">Crear</button>
+                <button onclick="closeContextModal()" data-i18n="btnCancel" class="flex-1 py-3 rounded-xl border border-gray-600 text-gray-300 text-sm font-bold">Cancelar</button>
+                <button onclick="saveNewContext()" data-i18n="btnCreate" class="flex-1 py-3 rounded-xl bg-blue-600 text-white text-sm font-bold">Crear</button>
             </div>
         </div>
     </div>
+
+    <footer class="mt-auto py-6 text-center opacity-60 hover:opacity-100 transition-opacity pb-8">
+        <div class="inline-flex items-center justify-center gap-2">
+            <div class="h-px w-8 bg-gradient-to-r from-transparent to-gray-500"></div>
+            <span class="text-xs font-medium tracking-widest text-gray-400" data-i18n="txtDesigned">HECHO POR <span class="text-gray-200">ING. SAÚL BRICEÑO</span></span>
+            <div class="h-px w-8 bg-gradient-to-l from-transparent to-gray-500"></div>
+        </div>
+    </footer>
 
     <script>
         // --- BASE DE DATOS LOCAL ---
         let usuariosDB = JSON.parse(localStorage.getItem('focus_usuarios')) || {};
         let activeUser = localStorage.getItem('focus_active_user') || null;
 
-        // Frases Motivacionales limpias
+        // --- SISTEMA DE TRADUCCIÓN ---
+        const dictionary = {
+            es: {
+                welcome: "Bienvenido de nuevo", btnLogin: "INICIAR SESIÓN", noAccount: "¿No tienes cuenta?", btnRegisterHere: "Regístrate aquí",
+                createAccount: "Crear Cuenta", setupSpace: "Configura tu espacio personal", btnRegister: "REGISTRARSE", haveAccount: "¿Ya tienes cuenta?", btnLoginHere: "Inicia sesión", keepSession: "Mantener sesión iniciada",
+                tabOverview: "Visión General", tabProgress: "Mi Progreso", emptyState: "Todo despejado. Toca el + para empezar.",
+                titleAnalytics: "Analíticas de Productividad", statBestHour: "Mejor Hora", statTotalDone: "Total Hechas", statBestArea: "Área Destacada", statWorstArea: "Área a Mejorar", historyTitle: "Historial Reciente", btnDeleteHistory: "Borrar Historial",
+                menuSettings: "Configuración", secProfile: "👤 Perfil", lblAge: "EDAD", lblGender: "SEXO", lblBirthday: "FECHA DE CUMPLEAÑOS", btnSaveProfile: "Guardar Perfil",
+                secCustom: "🎨 Personalización", lblLanguage: "IDIOMA", lblTheme: "TEMA", secSecurity: "🔒 Seguridad", btnSaveSecurity: "Actualizar Credenciales", btnLogout: "CERRAR SESIÓN",
+                modalNewTask: "Nueva Tarea", lblMinutes: "MINUTOS", lblDate: "FECHA (OPCIONAL)", lblChooseContext: "ELIGE EL APARTADO", btnSaveTask: "GUARDAR TAREA",
+                modalNewArea: "Crear Nuevo Apartado", lblColor: "COLOR", btnCancel: "Cancelar", btnCreate: "Crear",
+                txtDesigned: "HECHO POR <span class='text-gray-200 font-bold'>ING. SAÚL BRICEÑO</span>", txtGreeting: "Hola"
+            },
+            en: {
+                welcome: "Welcome back", btnLogin: "LOG IN", noAccount: "Don't have an account?", btnRegisterHere: "Register here",
+                createAccount: "Create Account", setupSpace: "Set up your personal space", btnRegister: "REGISTER", haveAccount: "Already have an account?", btnLoginHere: "Log in", keepSession: "Keep me logged in",
+                tabOverview: "Overview", tabProgress: "My Progress", emptyState: "All clear. Tap + to start.",
+                titleAnalytics: "Productivity Analytics", statBestHour: "Best Hour", statTotalDone: "Total Done", statBestArea: "Top Area", statWorstArea: "Area to Improve", historyTitle: "Recent History", btnDeleteHistory: "Clear History",
+                menuSettings: "Settings", secProfile: "👤 Profile", lblAge: "AGE", lblGender: "GENDER", lblBirthday: "BIRTHDAY", btnSaveProfile: "Save Profile",
+                secCustom: "🎨 Customization", lblLanguage: "LANGUAGE", lblTheme: "THEME", secSecurity: "🔒 Security", btnSaveSecurity: "Update Credentials", btnLogout: "LOG OUT",
+                modalNewTask: "New Task", lblMinutes: "MINUTES", lblDate: "DATE (OPTIONAL)", lblChooseContext: "CHOOSE CATEGORY", btnSaveTask: "SAVE TASK",
+                modalNewArea: "Create New Category", lblColor: "COLOR", btnCancel: "Cancel", btnCreate: "Create",
+                txtDesigned: "MADE BY <span class='text-gray-200 font-bold'>ENG. SAÚL BRICEÑO</span>", txtGreeting: "Hello"
+            },
+            fr: {
+                welcome: "Bon retour", btnLogin: "CONNEXION", noAccount: "Pas de compte ?", btnRegisterHere: "Inscrivez-vous ici",
+                createAccount: "Créer un compte", setupSpace: "Configurez votre espace", btnRegister: "S'INSCRIRE", haveAccount: "Déjà un compte ?", btnLoginHere: "Connectez-vous", keepSession: "Rester connecté",
+                tabOverview: "Vue d'ensemble", tabProgress: "Mes Progrès", emptyState: "Tout est clair. Appuyez sur + pour commencer.",
+                titleAnalytics: "Analytique de Productivité", statBestHour: "Meilleure Heure", statTotalDone: "Total Fait", statBestArea: "Meilleur Domaine", statWorstArea: "Domaine à Améliorer", historyTitle: "Historique Récent", btnDeleteHistory: "Effacer l'historique",
+                menuSettings: "Paramètres", secProfile: "👤 Profil", lblAge: "ÂGE", lblGender: "GENRE", lblBirthday: "DATE DE NAISSANCE", btnSaveProfile: "Enregistrer le profil",
+                secCustom: "🎨 Personnalisation", lblLanguage: "LANGUE", lblTheme: "THÈME", secSecurity: "🔒 Sécurité", btnSaveSecurity: "Mettre à jour", btnLogout: "DÉCONNEXION",
+                modalNewTask: "Nouvelle Tâche", lblMinutes: "MINUTES", lblDate: "DATE (OPTIONNELLE)", lblChooseContext: "CHOISIR LA CATÉGORIE", btnSaveTask: "ENREGISTRER",
+                modalNewArea: "Créer une Catégorie", lblColor: "COULEUR", btnCancel: "Annuler", btnCreate: "Créer",
+                txtDesigned: "FAIT PAR <span class='text-gray-200 font-bold'>ING. SAÚL BRICEÑO</span>", txtGreeting: "Salut"
+            }
+        };
+
+        function aplicarIdioma(lang) {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(dictionary[lang][key]) el.innerHTML = dictionary[lang][key];
+            });
+            // Update greeting safely
+            if(activeUser && usuariosDB[activeUser]) {
+                document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name}</span>`;
+            }
+        }
+
+        // --- FRASES ---
         const quotes = [
             { text: "No te midas por lo que lograste hoy, sino por la resistencia que mantuviste al intentarlo.", author: "Anónimo" },
             { text: "El sueño es el mejor regulador de la atención. Duerme tus 8 horas para conquistar tu día.", author: "Matthew Walker" },
             { text: "El éxito es la suma de pequeños esfuerzos repetidos día tras día.", author: "Robert Collier" },
             { text: "Haz una cosa a la vez. El cerebro no es multitarea, es un proyector de un solo lente.", author: "Dr. Edward Hallowell" },
-            { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo de Productividad" },
-            { text: "La motivación nos impulsa a comenzar, pero el hábito nos permite continuar.", author: "Jim Ryun" },
-            { text: "No esperes a que las condiciones sean perfectas para empezar. Empezar hace que las condiciones sean perfectas.", author: "Alan Cohen" },
-            { text: "El progreso, no la perfección, es lo que realmente importa.", author: "Anónimo" },
-            { text: "Céntrate en ser productivo, no en estar ocupado.", author: "Tim Ferriss" },
-            { text: "La disciplina es el puente entre las metas y los logros.", author: "Jim Rohn" },
-            { text: "Si no puedes volar, corre; si no puedes correr, camina; si no puedes caminar, gatea.", author: "Martin Luther King Jr." },
-            { text: "La energía fluye hacia donde va tu atención.", author: "Tony Robbins" },
-            { text: "El descanso también es productivo. No eres una máquina.", author: "Anónimo" },
-            { text: "Una tarea a medias requiere la misma energía mental que una tarea terminada.", author: "Anónimo" },
-            { text: "La clave no es gastar el tiempo, sino invertirlo.", author: "Stephen R. Covey" }
+            { text: "Empieza por la tarea que menos energía te quite para encender el motor.", author: "Consejo de Productividad" }
         ];
 
-        // --- FUNCIONES DE LOGIN Y REGISTRO ---
-        function mostrarRegistro() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('registerScreen').classList.remove('hidden');
-        }
-
-        function mostrarLogin() {
-            document.getElementById('registerScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-        }
+        // --- LOGIN Y REGISTRO ---
+        function mostrarRegistro() { document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('registerScreen').classList.remove('hidden'); }
+        function mostrarLogin() { document.getElementById('registerScreen').classList.add('hidden'); document.getElementById('loginScreen').classList.remove('hidden'); }
 
         function validarPassword() {
             const p = document.getElementById('regPass').value;
-            const reqLen = document.getElementById('reqLen');
-            const reqCap = document.getElementById('reqCap');
-            const reqNum = document.getElementById('reqNum');
-
+            const reqLen = document.getElementById('reqLen'), reqCap = document.getElementById('reqCap'), reqNum = document.getElementById('reqNum');
             p.length >= 8 ? (reqLen.className = "req-pass", reqLen.innerText = "✓ Mínimo 8 caracteres") : (reqLen.className = "req-fail", reqLen.innerText = "○ Mínimo 8 caracteres");
             /[A-Z]/.test(p) ? (reqCap.className = "req-pass", reqCap.innerText = "✓ Al menos 1 mayúscula") : (reqCap.className = "req-fail", reqCap.innerText = "○ Al menos 1 mayúscula");
             /[0-9]/.test(p) ? (reqNum.className = "req-pass", reqNum.innerText = "✓ Al menos 1 número") : (reqNum.className = "req-fail", reqNum.innerText = "○ Al menos 1 número");
-            
             return p.length >= 8 && /[A-Z]/.test(p) && /[0-9]/.test(p);
         }
 
@@ -256,19 +373,16 @@
             const passConf = document.getElementById('regPassConfirm').value;
 
             if(!user || !gender || !pass || !passConf) return alert('Por favor, llena todos los campos.');
-            if(usuariosDB[user]) return alert('Este usuario ya existe. Intenta iniciar sesión.');
-            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos mínimos.');
+            if(usuariosDB[user]) return alert('Este usuario ya existe.');
+            if(!validarPassword()) return alert('La contraseña no cumple con los requisitos.');
             if(pass !== passConf) return alert('Las contraseñas no coinciden.');
 
-            // Guardamos al usuario usando su username como nombre temporal
-            usuariosDB[user] = { pass: pass, name: user, gender: gender };
+            // Usuario con datos extendidos
+            usuariosDB[user] = { pass: pass, name: user, gender: gender, age: '', birthday: '', avatar: 'icon.png', lang: 'es', theme: 'dark' };
             localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
             
             alert('¡Cuenta creada! Por favor inicia sesión.');
-            
-            document.getElementById('regUser').value = '';
-            document.getElementById('regPass').value = '';
-            document.getElementById('regPassConfirm').value = '';
+            document.getElementById('regUser').value = ''; document.getElementById('regPass').value = ''; document.getElementById('regPassConfirm').value = '';
             mostrarLogin();
         }
 
@@ -293,18 +407,10 @@
             localStorage.removeItem('focus_active_user');
             activeUser = null;
             document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('settingsModal').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('loginPass').value = '';
-        }
-
-        function editarNombre() {
-            const currentName = usuariosDB[activeUser].name;
-            const newName = prompt("¿Cómo quieres que te llame la app?", currentName);
-            if (newName && newName.trim() !== "") {
-                usuariosDB[activeUser].name = newName.trim();
-                localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
-                document.getElementById('userGreeting').innerHTML = `Hola, <span class="font-bold text-white hover:text-blue-400 transition-colors">${newName.trim()}</span>`;
-            }
+            document.body.classList.remove('light-mode'); // Resetear tema al salir
         }
 
         function entrarAplicacion() {
@@ -313,8 +419,11 @@
             document.getElementById('mainApp').classList.remove('hidden');
             
             const uData = usuariosDB[activeUser];
-            document.getElementById('userGreeting').innerHTML = `Hola, <span class="font-bold text-white hover:text-blue-400 transition-colors">${uData.name}</span>`;
-
+            
+            // Cargar Ajustes Guardados
+            cargarAjustesUI();
+            
+            // Cargar Frase
             const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
             const daily = quotes[dayOfYear % quotes.length];
             document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
@@ -330,11 +439,113 @@
             entrarAplicacion();
         }
 
-        // --- SISTEMA DE TAREAS Y APARTADOS CON COLOR ---
+        // --- LÓGICA DEL MENÚ DE CONFIGURACIÓN ---
+        function toggleSettingsMenu(show) {
+            const modal = document.getElementById('settingsModal');
+            if(show) {
+                cargarAjustesUI(); // Rellenar inputs antes de abrir
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden'); modal.classList.remove('flex');
+            }
+        }
+
+        function cargarAjustesUI() {
+            const u = usuariosDB[activeUser];
+            // Cabecera
+            document.getElementById('headerAvatar').src = u.avatar || 'icon.png';
+            document.getElementById('menuAvatar').src = u.avatar || 'icon.png';
+            aplicarIdioma(u.lang || 'es');
+            
+            // Perfil
+            document.getElementById('setProfileName').value = u.name || activeUser;
+            document.getElementById('setAge').value = u.age || '';
+            document.getElementById('setGender').value = u.gender || 'Hombre';
+            document.getElementById('setBirthday').value = u.birthday || '';
+            
+            // Personalización
+            document.getElementById('setLanguage').value = u.lang || 'es';
+            document.getElementById('setTheme').value = u.theme || 'dark';
+            aplicarTema(u.theme || 'dark');
+        }
+
+        function actualizarFoto(event) {
+            const file = event.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Image = e.target.result;
+                    usuariosDB[activeUser].avatar = base64Image;
+                    localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+                    document.getElementById('headerAvatar').src = base64Image;
+                    document.getElementById('menuAvatar').src = base64Image;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function guardarPerfil() {
+            const u = usuariosDB[activeUser];
+            u.name = document.getElementById('setProfileName').value.trim() || activeUser;
+            u.age = document.getElementById('setAge').value;
+            u.gender = document.getElementById('setGender').value;
+            u.birthday = document.getElementById('setBirthday').value;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            aplicarIdioma(u.lang || 'es'); // Refresca el saludo
+            alert("Perfil actualizado correctamente.");
+        }
+
+        function guardarSeguridad() {
+            const newUser = document.getElementById('setNewUser').value.trim();
+            const newPass = document.getElementById('setNewPass').value;
+            const confirmPass = document.getElementById('setConfirmPass').value;
+
+            if(!newPass || !confirmPass) return alert("Llena los campos de contraseña.");
+            if(newPass !== confirmPass) return alert("Las contraseñas no coinciden.");
+            
+            // Cambio de usuario
+            let currentData = usuariosDB[activeUser];
+            if(newUser && newUser !== activeUser) {
+                if(usuariosDB[newUser]) return alert("Ese usuario ya está en uso.");
+                usuariosDB[newUser] = currentData;
+                delete usuariosDB[activeUser];
+                activeUser = newUser;
+                if(localStorage.getItem('focus_user_logged') === 'true') {
+                    localStorage.setItem('focus_active_user', activeUser);
+                }
+            }
+
+            usuariosDB[activeUser].pass = newPass;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            
+            document.getElementById('setNewUser').value = '';
+            document.getElementById('setNewPass').value = '';
+            document.getElementById('setConfirmPass').value = '';
+            alert("Credenciales de seguridad actualizadas.");
+        }
+
+        function cambiarIdioma() {
+            const lang = document.getElementById('setLanguage').value;
+            usuariosDB[activeUser].lang = lang;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            aplicarIdioma(lang);
+        }
+
+        function cambiarTema() {
+            const theme = document.getElementById('setTheme').value;
+            usuariosDB[activeUser].theme = theme;
+            localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
+            aplicarTema(theme);
+        }
+
+        function aplicarTema(theme) {
+            if(theme === 'light') document.body.classList.add('light-mode');
+            else document.body.classList.remove('light-mode');
+        }
+
+        // --- SISTEMA DE TAREAS Y APARTADOS ---
         let tasks = JSON.parse(localStorage.getItem('tasks_v6')) || [];
         let historyTasks = JSON.parse(localStorage.getItem('history_v1')) || [];
-        
-        // Nueva versión de apartados que incluye Color Hexadecimal
         let contexts = JSON.parse(localStorage.getItem('contexts_v2')) || [
             { id: 'hogar', name: 'Hogar', icon: '🏠', color: '#3b82f6' },
             { id: 'trabajo', name: 'Trabajo', icon: '💼', color: '#10b981' }
@@ -344,133 +555,83 @@
         let selectedContext = contexts[0].id;
         let interval;
 
-        // Mostrar / Ocultar el creador de tareas
         function toggleTaskCreator(show) {
             const modal = document.getElementById('taskCreatorModal');
-            if(show) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            } else {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
+            if(show) { modal.classList.remove('hidden'); modal.classList.add('flex'); } 
+            else { modal.classList.add('hidden'); modal.classList.remove('flex'); }
         }
 
-        // Navegación entre Vistas
         function switchMainView(view) {
-            const btnT = document.getElementById('navTasks');
-            const btnS = document.getElementById('navStats');
-            const vT = document.getElementById('viewTasks');
-            const vS = document.getElementById('viewStats');
-            const fab = document.getElementById('fabBtn');
+            const btnT = document.getElementById('navTasks'), btnS = document.getElementById('navStats');
+            const vT = document.getElementById('viewTasks'), vS = document.getElementById('viewStats'), fab = document.getElementById('fabBtn');
 
             if(view === 'tasks') {
                 btnT.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
                 btnS.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
-                vT.classList.remove('hidden');
-                vS.classList.add('hidden');
-                fab.classList.remove('hidden'); // Mostrar botón de tarea
+                vT.classList.remove('hidden'); vS.classList.add('hidden'); fab.classList.remove('hidden');
             } else {
                 btnS.className = "flex-1 py-2 text-sm font-bold bg-blue-600 rounded-lg shadow text-white transition-all";
                 btnT.className = "flex-1 py-2 text-sm font-bold text-gray-400 hover:text-white transition-all";
-                vS.classList.remove('hidden');
-                vT.classList.add('hidden');
-                fab.classList.add('hidden'); // Ocultar en estadísticas
+                vS.classList.remove('hidden'); vT.classList.add('hidden'); fab.classList.add('hidden');
                 actualizarAnaliticas();
             }
         }
 
         function renderTabs() {
             const container = document.getElementById('tabContainer');
-            container.innerHTML = `<button onclick="setFilter('Todos')" class="pb-2 transition-all text-sm ${currentFilter === 'Todos' ? 'border-b-2 border-white text-white font-bold' : 'text-gray-500 hover:text-gray-300'}">Visión General</button>`;
+            const isLight = document.body.classList.contains('light-mode');
+            const defaultTxtColor = isLight ? 'text-gray-900 border-gray-900' : 'text-white border-white';
+            
+            container.innerHTML = `<button onclick="setFilter('Todos')" class="pb-2 transition-all text-sm ${currentFilter === 'Todos' ? `border-b-2 font-bold ${defaultTxtColor}` : 'text-gray-500 hover:text-gray-400'}">${dictionary[usuariosDB[activeUser]?.lang || 'es'].tabOverview}</button>`;
+            
             contexts.forEach(ctx => {
                 const isActive = currentFilter === ctx.id;
-                container.innerHTML += `<button onclick="setFilter('${ctx.id}')" style="${isActive ? `border-bottom: 2px solid ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : ''}" class="pb-2 transition-all text-sm ${!isActive ? 'text-gray-500 hover:text-gray-300' : ''}">${ctx.icon} ${ctx.name}</button>`;
+                container.innerHTML += `<button onclick="setFilter('${ctx.id}')" style="${isActive ? `border-bottom: 2px solid ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : ''}" class="pb-2 transition-all text-sm ${!isActive ? 'text-gray-500 hover:text-gray-400' : ''}">${ctx.icon} ${ctx.name}</button>`;
             });
         }
 
-        // --- LÓGICA DE APARTADOS (CON COLORES) ---
         function renderContextButtons() {
             const container = document.getElementById('contextButtons');
             container.innerHTML = '';
             contexts.forEach(ctx => {
                 const isSelected = selectedContext === ctx.id;
-                const hexColor = ctx.color || '#3b82f6';
-                
-                // Si está seleccionado, usamos su color personalizado
-                const style = isSelected 
-                    ? `background-color: ${hexColor}30; border-color: ${hexColor}; color: ${hexColor}; font-weight: bold;` 
-                    : `border-color: #374151; color: #9ca3af;`;
-                
+                const style = isSelected ? `background-color: ${ctx.color}30; border-color: ${ctx.color}; color: ${ctx.color}; font-weight: bold;` : `border-color: #374151; color: #9ca3af;`;
                 container.innerHTML += `<button onclick="setContext('${ctx.id}')" style="${style}" class="px-3 py-1.5 rounded-xl border text-sm transition-all flex items-center gap-1">${ctx.icon} ${ctx.name}</button>`;
             });
-            container.innerHTML += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-600 text-gray-500 text-sm hover:border-white hover:text-white transition-all flex items-center">+ Nuevo</button>`;
+            container.innerHTML += `<button onclick="openContextModal()" class="px-3 py-1.5 rounded-xl border border-dashed border-gray-500 text-gray-500 text-sm transition-all flex items-center">+ Nuevo</button>`;
         }
 
-        function setContext(id) { 
-            selectedContext = id; 
-            renderContextButtons(); 
-        }
-
-        function openContextModal() {
-            document.getElementById('newContextModal').classList.remove('hidden');
-            document.getElementById('newContextModal').classList.add('flex');
-        }
-
-        function closeContextModal() {
-            document.getElementById('newContextModal').classList.add('hidden');
-            document.getElementById('newContextModal').classList.remove('flex');
-            document.getElementById('newCtxName').value = '';
-            document.getElementById('newCtxIcon').value = '';
-        }
+        function setContext(id) { selectedContext = id; renderContextButtons(); }
+        function openContextModal() { document.getElementById('newContextModal').classList.remove('hidden'); document.getElementById('newContextModal').classList.add('flex'); }
+        function closeContextModal() { document.getElementById('newContextModal').classList.add('hidden'); document.getElementById('newContextModal').classList.remove('flex'); }
 
         function saveNewContext() {
-            const name = document.getElementById('newCtxName').value.trim();
-            const icon = document.getElementById('newCtxIcon').value.trim() || '📌';
-            const color = document.getElementById('newCtxColor').value;
-            
-            if(!name) return alert("Ponle un nombre al apartado.");
-            
+            const name = document.getElementById('newCtxName').value.trim(), icon = document.getElementById('newCtxIcon').value.trim() || '📌', color = document.getElementById('newCtxColor').value;
+            if(!name) return alert("Ponle un nombre.");
             const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
             contexts.push({ id: newId, name: name, icon: icon, color: color });
             localStorage.setItem('contexts_v2', JSON.stringify(contexts));
-            
-            setContext(newId);
-            renderTabs();
-            closeContextModal();
+            setContext(newId); renderTabs(); closeContextModal();
         }
 
-        // --- LÓGICA PRINCIPAL DE TAREAS ---
         function renderTasks() {
-            const container = document.getElementById('taskList');
-            const emptyState = document.getElementById('emptyState');
+            const container = document.getElementById('taskList'), emptyState = document.getElementById('emptyState');
             container.innerHTML = '';
-            
             let filtered = tasks.filter(t => currentFilter === 'Todos' || t.contextId === currentFilter);
             
-            if(filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-                emptyState.classList.remove('flex');
-            }
+            if(filtered.length === 0) { emptyState.classList.remove('hidden'); emptyState.classList.add('flex'); return; } 
+            else { emptyState.classList.add('hidden'); emptyState.classList.remove('flex'); }
 
             const today = new Date().toISOString().split('T')[0];
-
             filtered.forEach((t) => {
-                const globalIndex = tasks.indexOf(t);
-                const mins = Math.floor(t.timeLeft / 60);
-                const secs = t.timeLeft % 60;
-                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Desconocido', icon: '❓', color: '#6b7280' };
-                const cColor = taskContext.color;
+                const globalIndex = tasks.indexOf(t), mins = Math.floor(t.timeLeft / 60), secs = t.timeLeft % 60;
+                const taskContext = contexts.find(c => c.id === t.contextId) || { name: 'Des', icon: '❓', color: '#6b7280' };
                 
                 let dateBadge = '';
                 if (t.date) {
-                    const isOverdueOrToday = t.date <= today;
-                    const badgeClass = isOverdueOrToday ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-[#12121a] text-gray-400 border-gray-700';
-                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeClass} flex items-center gap-1">${isOverdueOrToday ? '⚠️' : '📅'} ${t.date}</span>`;
+                    const isOverdue = t.date <= today;
+                    const badgeClass = isOverdue ? 'bg-red-500/20 text-red-500 border-red-500/30' : 'bg-gray-800/50 text-gray-400 border-gray-700/50';
+                    dateBadge = `<span class="text-[10px] px-2 py-0.5 rounded-md border ${badgeClass} flex items-center gap-1">${isOverdue ? '⚠️' : '📅'} ${t.date}</span>`;
                 }
 
                 const div = document.createElement('div');
@@ -479,20 +640,20 @@
                     <div class="flex justify-between items-start gap-3">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[10px] px-2 py-0.5 rounded-md border font-bold flex items-center gap-1" style="background-color: ${cColor}20; border-color: ${cColor}50; color: ${cColor};">${taskContext.icon} ${taskContext.name.toUpperCase()}</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-md border font-bold flex items-center gap-1" style="background-color: ${taskContext.color}20; border-color: ${taskContext.color}50; color: ${taskContext.color};">${taskContext.icon} ${taskContext.name.toUpperCase()}</span>
                                 ${dateBadge}
                             </div>
-                            <p class="text-base font-medium leading-snug text-gray-100">${t.text}</p>
+                            <p class="text-base font-medium leading-snug">${t.text}</p>
                         </div>
                         <div class="text-right shrink-0">
                             <p class="text-2xl font-mono ${t.isRunning ? 'timer-active' : 'text-gray-500'}">${mins}:${secs < 10 ? '0' : ''}${secs}</p>
                         </div>
                     </div>
                     <div class="flex gap-2 mt-1">
-                        <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-colors text-xs font-semibold tracking-wide text-gray-300">
+                        <button onclick="toggleTimer(${globalIndex})" class="flex-1 py-2.5 rounded-xl border border-gray-500/30 text-xs font-semibold tracking-wide hover:bg-gray-500/10 transition-colors">
                             ${t.isRunning ? '⏸ PAUSAR' : '▶ ENFOCAR'}
                         </button>
-                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-transform" style="background-color: ${cColor}">HECHO ✓</button>
+                        <button onclick="completeTask(${globalIndex})" class="px-6 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg active:scale-95 transition-transform" style="background-color: ${taskContext.color}">HECHO ✓</button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -500,47 +661,22 @@
         }
 
         function addTask() {
-            const input = document.getElementById('taskInput');
-            const timeInput = document.getElementById('taskTime');
-            const dateInput = document.getElementById('taskDate');
-            let mins = parseInt(timeInput.value) || 25;
-            if (mins > 120) mins = 120;
+            const input = document.getElementById('taskInput'), timeInput = document.getElementById('taskTime'), dateInput = document.getElementById('taskDate');
+            let mins = parseInt(timeInput.value) || 25; if (mins > 120) mins = 120;
             if (input.value.trim() === '') return alert("Describe tu tarea primero.");
-
-            tasks.push({ 
-                text: input.value, 
-                contextId: selectedContext, 
-                timeLeft: mins * 60, 
-                isRunning: false, 
-                date: dateInput.value || null // La fecha no es obligatoria
-            });
-            
-            saveAndRender();
-            input.value = '';
-            dateInput.value = '';
-            toggleTaskCreator(false); // Cerramos el panel después de guardar
+            tasks.push({ text: input.value, contextId: selectedContext, timeLeft: mins * 60, isRunning: false, date: dateInput.value || null });
+            saveAndRender(); input.value = ''; dateInput.value = ''; toggleTaskCreator(false);
         }
 
-        function setFilter(filter) {
-            currentFilter = filter;
-            renderTabs();
-            renderTasks();
-        }
+        function setFilter(filter) { currentFilter = filter; renderTabs(); renderTasks(); }
 
         function toggleTimer(index) {
             tasks.forEach((t, i) => { if(i !== index) t.isRunning = false; });
-            tasks[index].isRunning = !tasks[index].isRunning;
-            clearInterval(interval);
+            tasks[index].isRunning = !tasks[index].isRunning; clearInterval(interval);
             if (tasks[index].isRunning) {
                 interval = setInterval(() => {
-                    if (tasks[index].timeLeft > 0) {
-                        tasks[index].timeLeft--;
-                        saveAndRender();
-                    } else {
-                        clearInterval(interval);
-                        tasks[index].isRunning = false;
-                        saveAndRender();
-                    }
+                    if (tasks[index].timeLeft > 0) { tasks[index].timeLeft--; saveAndRender(); } 
+                    else { clearInterval(interval); tasks[index].isRunning = false; saveAndRender(); }
                 }, 1000);
             }
             saveAndRender();
@@ -550,65 +686,44 @@
             const completed = tasks[index];
             historyTasks.push({ text: completed.text, contextId: completed.contextId, completedAt: new Date().toISOString() });
             localStorage.setItem('history_v1', JSON.stringify(historyTasks));
-
-            tasks.splice(index, 1);
-            clearInterval(interval);
-            saveAndRender();
+            tasks.splice(index, 1); clearInterval(interval); saveAndRender();
         }
 
         function borrarHistorial() {
-            if(confirm("¿Seguro que quieres borrar todas tus analíticas y tareas terminadas?")) {
-                historyTasks = [];
-                localStorage.setItem('history_v1', JSON.stringify(historyTasks));
-                actualizarAnaliticas();
+            if(confirm("¿Seguro que quieres borrar todas tus analíticas?")) {
+                historyTasks = []; localStorage.setItem('history_v1', JSON.stringify(historyTasks)); actualizarAnaliticas();
             }
         }
 
         function actualizarAnaliticas() {
             document.getElementById('statTotal').innerText = historyTasks.length;
-            const cList = document.getElementById('historyList');
-            cList.innerHTML = '';
+            const cList = document.getElementById('historyList'); cList.innerHTML = '';
             
             if(historyTasks.length === 0) {
                 cList.innerHTML = '<p class="text-sm text-gray-500 italic">Aún no hay tareas completadas.</p>';
-                document.getElementById('statBestHour').innerText = "--:--";
-                document.getElementById('statBestArea').innerText = "--";
-                document.getElementById('statWorstArea').innerText = "--";
+                document.getElementById('statBestHour').innerText = "--:--"; document.getElementById('statBestArea').innerText = "--"; document.getElementById('statWorstArea').innerText = "--";
                 return;
             }
 
-            let hoursCount = {};
-            let contextCount = {};
-            
+            let hoursCount = {}, contextCount = {};
             historyTasks.slice().reverse().forEach(t => {
-                const d = new Date(t.completedAt);
-                const ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌', color: '#6b7280' };
-                cList.innerHTML += `<div class="bg-white/5 p-3 rounded-xl flex justify-between items-center"><div class="flex items-center gap-2"><span class="opacity-60" style="color: ${ctx.color}">${ctx.icon}</span><p class="text-sm text-gray-300 line-through">${t.text}</p></div><span class="text-[10px] text-gray-500">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
-                
-                const hour = d.getHours();
-                hoursCount[hour] = (hoursCount[hour] || 0) + 1;
-                contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
+                const d = new Date(t.completedAt), ctx = contexts.find(c => c.id === t.contextId) || { name: '?', icon: '📌', color: '#6b7280' };
+                cList.innerHTML += `<div class="bg-gray-500/10 p-3 rounded-xl flex justify-between items-center mb-2"><div class="flex items-center gap-2"><span style="color: ${ctx.color}">${ctx.icon}</span><p class="text-sm line-through opacity-70">${t.text}</p></div><span class="text-[10px] opacity-50">${d.getHours()}:${d.getMinutes() < 10 ? '0':''}${d.getMinutes()}</span></div>`;
+                hoursCount[d.getHours()] = (hoursCount[d.getHours()] || 0) + 1; contextCount[t.contextId] = (contextCount[t.contextId] || 0) + 1;
             });
 
             let bestHour = Object.keys(hoursCount).reduce((a, b) => hoursCount[a] > hoursCount[b] ? a : b);
             document.getElementById('statBestHour').innerText = `${bestHour}:00`;
-
             let bestCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] > contextCount[b] ? a : b);
             let worstCtxId = Object.keys(contextCount).reduce((a, b) => contextCount[a] < contextCount[b] ? a : b);
             
-            const bestCtxObj = contexts.find(c => c.id === bestCtxId);
-            const worstCtxObj = contexts.find(c => c.id === worstCtxId);
-
+            const bestCtxObj = contexts.find(c => c.id === bestCtxId), worstCtxObj = contexts.find(c => c.id === worstCtxId);
             document.getElementById('statBestArea').innerText = bestCtxObj ? bestCtxObj.name : '--';
             document.getElementById('statBestArea').style.color = bestCtxObj ? bestCtxObj.color : '#fff';
-            
             document.getElementById('statWorstArea').innerText = (worstCtxObj && worstCtxId !== bestCtxId) ? worstCtxObj.name : 'N/A';
         }
 
-        function saveAndRender() {
-            localStorage.setItem('tasks_v6', JSON.stringify(tasks));
-            renderTasks();
-        }
+        function saveAndRender() { localStorage.setItem('tasks_v6', JSON.stringify(tasks)); renderTasks(); }
     </script>
 </body>
 </html>

@@ -166,70 +166,85 @@
                 <button onclick="toggleSettingsMenu(false)" class="w-8 h-8 rounded-full bg-white/10 text-gray-300 hover:bg-white/20 flex items-center justify-center font-bold">✕</button>
             </div>
 
-            <div class="bg-white/5 rounded-2xl p-4 mb-4 border border-white/10">
-                <h3 data-i18n="secProfile" class="text-blue-400 font-bold mb-4 text-sm uppercase tracking-wider">👤 Perfil</h3>
-                <div class="flex items-center gap-4 mb-4">
-                    <label class="cursor-pointer relative group">
-                        <img id="menuAvatar" src="icon.png" class="w-16 h-16 rounded-full object-cover border border-gray-600">
-                        <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <span class="text-xl">📷</span>
+            <div class="bg-white/5 rounded-2xl mb-4 border border-white/10 overflow-hidden transition-all">
+                <button onclick="toggleAccordion('accProfile')" class="w-full p-4 flex justify-between items-center outline-none">
+                    <h3 data-i18n="secProfile" class="text-blue-400 font-bold text-sm uppercase tracking-wider">👤 Perfil</h3>
+                    <span id="icon-accProfile" class="text-gray-400 text-xs transition-transform transform">▼</span>
+                </button>
+                <div id="accProfile" class="hidden px-4 pb-4 animate__animated animate__fadeIn">
+                    <div class="flex items-center gap-4 mb-4">
+                        <label class="cursor-pointer relative group">
+                            <img id="menuAvatar" src="icon.png" class="w-16 h-16 rounded-full object-cover border border-gray-600">
+                            <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="text-xl">📷</span>
+                            </div>
+                            <input type="file" id="uploadAvatar" accept="image/*" class="hidden" onchange="actualizarFoto(event)">
+                        </label>
+                        <div class="flex-1">
+                            <input id="setProfileName" type="text" placeholder="Nombre" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-blue-500">
                         </div>
-                        <input type="file" id="uploadAvatar" accept="image/*" class="hidden" onchange="actualizarFoto(event)">
-                    </label>
-                    <div class="flex-1">
-                        <input id="setProfileName" type="text" placeholder="Nombre" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-blue-500">
                     </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <span data-i18n="lblAge" class="text-[10px] text-gray-500">EDAD</span>
-                        <input id="setAge" type="number" placeholder="Ej. 25" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <span data-i18n="lblAge" class="text-[10px] text-gray-500">EDAD</span>
+                            <input id="setAge" type="number" placeholder="Ej. 25" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none">
+                        </div>
+                        <div>
+                            <span data-i18n="lblGender" class="text-[10px] text-gray-500">SEXO</span>
+                            <select id="setGender" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                                <option value="Hombre">Hombre</option>
+                                <option value="Mujer">Mujer</option>
+                                <option value="No binario">No binario</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <span data-i18n="lblGender" class="text-[10px] text-gray-500">SEXO</span>
-                        <select id="setGender" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
-                            <option value="Hombre">Hombre</option>
-                            <option value="Mujer">Mujer</option>
-                            <option value="No binario">No binario</option>
-                        </select>
+                    <div class="mb-4">
+                        <span data-i18n="lblBirthday" class="text-[10px] text-gray-500">FECHA DE CUMPLEAÑOS</span>
+                        <input id="setBirthday" type="date" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
                     </div>
-                </div>
-                <div class="mb-4">
-                    <span data-i18n="lblBirthday" class="text-[10px] text-gray-500">FECHA DE CUMPLEAÑOS</span>
-                    <input id="setBirthday" type="date" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
-                </div>
-                <button onclick="guardarPerfil()" data-i18n="btnSaveProfile" class="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm font-bold hover:bg-blue-600/40 transition-colors">Guardar Perfil</button>
-            </div>
-
-            <div class="bg-white/5 rounded-2xl p-4 mb-4 border border-white/10">
-                <h3 data-i18n="secCustom" class="text-purple-400 font-bold mb-4 text-sm uppercase tracking-wider">🎨 Personalización</h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <span data-i18n="lblLanguage" class="text-[10px] text-gray-500">IDIOMA</span>
-                        <select id="setLanguage" onchange="cambiarIdioma()" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
-                            <option value="es">Español</option>
-                            <option value="en">English</option>
-                            <option value="fr">Français</option>
-                        </select>
-                    </div>
-                    <div>
-                        <span data-i18n="lblTheme" class="text-[10px] text-gray-500">TEMA</span>
-                        <select id="setTheme" onchange="cambiarTema()" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
-                            <option value="dark">🌙 Oscuro</option>
-                            <option value="light">☀️ Claro</option>
-                        </select>
-                    </div>
+                    <button onclick="guardarPerfil()" data-i18n="btnSaveProfile" class="w-full py-2 bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg text-sm font-bold hover:bg-blue-600/40 transition-colors">Guardar Perfil</button>
                 </div>
             </div>
 
-            <div class="bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
-                <h3 data-i18n="secSecurity" class="text-emerald-400 font-bold mb-4 text-sm uppercase tracking-wider">🔒 Seguridad</h3>
-                <div class="space-y-3 mb-4">
-                    <input id="setNewUser" type="text" placeholder="Nuevo Usuario (Credencial)" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
-                    <input id="setNewPass" type="password" placeholder="Nueva Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
-                    <input id="setConfirmPass" type="password" placeholder="Confirmar Nueva Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+            <div class="bg-white/5 rounded-2xl mb-4 border border-white/10 overflow-hidden transition-all">
+                <button onclick="toggleAccordion('accCustom')" class="w-full p-4 flex justify-between items-center outline-none">
+                    <h3 data-i18n="secCustom" class="text-purple-400 font-bold text-sm uppercase tracking-wider">🎨 Personalización</h3>
+                    <span id="icon-accCustom" class="text-gray-400 text-xs transition-transform transform">▼</span>
+                </button>
+                <div id="accCustom" class="hidden px-4 pb-4 animate__animated animate__fadeIn">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <span data-i18n="lblLanguage" class="text-[10px] text-gray-500">IDIOMA</span>
+                            <select id="setLanguage" onchange="cambiarIdioma()" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                            </select>
+                        </div>
+                        <div>
+                            <span data-i18n="lblTheme" class="text-[10px] text-gray-500">TEMA</span>
+                            <select id="setTheme" onchange="cambiarTema()" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-gray-300 text-sm outline-none">
+                                <option value="dark">🌙 Oscuro</option>
+                                <option value="light">☀️ Claro</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="guardarSeguridad()" data-i18n="btnSaveSecurity" class="w-full py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-bold hover:bg-emerald-600/40 transition-colors">Actualizar Credenciales</button>
+            </div>
+
+            <div class="bg-white/5 rounded-2xl mb-6 border border-white/10 overflow-hidden transition-all">
+                <button onclick="toggleAccordion('accSecurity')" class="w-full p-4 flex justify-between items-center outline-none">
+                    <h3 data-i18n="secSecurity" class="text-emerald-400 font-bold text-sm uppercase tracking-wider">🔒 Seguridad</h3>
+                    <span id="icon-accSecurity" class="text-gray-400 text-xs transition-transform transform">▼</span>
+                </button>
+                <div id="accSecurity" class="hidden px-4 pb-4 animate__animated animate__fadeIn">
+                    <div class="space-y-3 mb-4">
+                        <input id="setNewUser" type="text" placeholder="Modificar usuario (credencial)" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+                        <input id="setNewPass" type="password" placeholder="Modificar contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+                        <input id="setConfirmPass" type="password" placeholder="Confirmar Nueva Contraseña" class="w-full bg-[#12121a] border border-gray-700 rounded-lg p-2 text-white text-sm outline-none focus:border-emerald-500">
+                    </div>
+                    <button onclick="guardarSeguridad()" data-i18n="btnSaveSecurity" class="w-full py-2 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-lg text-sm font-bold hover:bg-emerald-600/40 transition-colors">Actualizar Credenciales</button>
+                </div>
             </div>
 
             <button onclick="cerrarSesion()" data-i18n="btnLogout" class="w-full py-3 bg-red-600/20 text-red-500 border border-red-500/50 rounded-xl font-bold tracking-widest hover:bg-red-600/40 transition-colors">CERRAR SESIÓN</button>
@@ -338,7 +353,6 @@
                 const key = el.getAttribute('data-i18n');
                 if(dictionary[lang][key]) el.innerHTML = dictionary[lang][key];
             });
-            // Update greeting safely
             if(activeUser && usuariosDB[activeUser]) {
                 document.getElementById('userGreeting').innerHTML = `${dictionary[lang].txtGreeting}, <span class="font-bold text-white hover:text-blue-400">${usuariosDB[activeUser].name}</span>`;
             }
@@ -377,7 +391,6 @@
             if(!validarPassword()) return alert('La contraseña no cumple con los requisitos.');
             if(pass !== passConf) return alert('Las contraseñas no coinciden.');
 
-            // Usuario con datos extendidos
             usuariosDB[user] = { pass: pass, name: user, gender: gender, age: '', birthday: '', avatar: 'icon.png', lang: 'es', theme: 'dark' };
             localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
             
@@ -410,7 +423,13 @@
             document.getElementById('settingsModal').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('loginPass').value = '';
-            document.body.classList.remove('light-mode'); // Resetear tema al salir
+            document.body.classList.remove('light-mode'); 
+            
+            // Cerrar todos los acordeones al salir
+            ['accProfile', 'accCustom', 'accSecurity'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById('icon-' + id).style.transform = 'rotate(0deg)';
+            });
         }
 
         function entrarAplicacion() {
@@ -418,12 +437,8 @@
             document.getElementById('registerScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
-            const uData = usuariosDB[activeUser];
-            
-            // Cargar Ajustes Guardados
             cargarAjustesUI();
             
-            // Cargar Frase
             const dayOfYear = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
             const daily = quotes[dayOfYear % quotes.length];
             document.getElementById('dailyQuote').innerText = `"${daily.text}"`;
@@ -439,31 +454,43 @@
             entrarAplicacion();
         }
 
-        // --- LÓGICA DEL MENÚ DE CONFIGURACIÓN ---
+        // --- LÓGICA DEL MENÚ DE CONFIGURACIÓN Y ACORDEÓN ---
         function toggleSettingsMenu(show) {
             const modal = document.getElementById('settingsModal');
             if(show) {
-                cargarAjustesUI(); // Rellenar inputs antes de abrir
+                cargarAjustesUI();
                 modal.classList.remove('hidden'); modal.classList.add('flex');
             } else {
                 modal.classList.add('hidden'); modal.classList.remove('flex');
             }
         }
 
+        function toggleAccordion(id) {
+            const sections = ['accProfile', 'accCustom', 'accSecurity'];
+            sections.forEach(sec => {
+                const el = document.getElementById(sec);
+                const icon = document.getElementById('icon-' + sec);
+                if (sec === id) {
+                    el.classList.toggle('hidden');
+                    icon.style.transform = el.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
+                } else {
+                    el.classList.add('hidden');
+                    document.getElementById('icon-' + sec).style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
         function cargarAjustesUI() {
             const u = usuariosDB[activeUser];
-            // Cabecera
             document.getElementById('headerAvatar').src = u.avatar || 'icon.png';
             document.getElementById('menuAvatar').src = u.avatar || 'icon.png';
             aplicarIdioma(u.lang || 'es');
             
-            // Perfil
             document.getElementById('setProfileName').value = u.name || activeUser;
             document.getElementById('setAge').value = u.age || '';
             document.getElementById('setGender').value = u.gender || 'Hombre';
             document.getElementById('setBirthday').value = u.birthday || '';
             
-            // Personalización
             document.getElementById('setLanguage').value = u.lang || 'es';
             document.getElementById('setTheme').value = u.theme || 'dark';
             aplicarTema(u.theme || 'dark');
@@ -491,7 +518,7 @@
             u.gender = document.getElementById('setGender').value;
             u.birthday = document.getElementById('setBirthday').value;
             localStorage.setItem('focus_usuarios', JSON.stringify(usuariosDB));
-            aplicarIdioma(u.lang || 'es'); // Refresca el saludo
+            aplicarIdioma(u.lang || 'es'); 
             alert("Perfil actualizado correctamente.");
         }
 
@@ -503,7 +530,6 @@
             if(!newPass || !confirmPass) return alert("Llena los campos de contraseña.");
             if(newPass !== confirmPass) return alert("Las contraseñas no coinciden.");
             
-            // Cambio de usuario
             let currentData = usuariosDB[activeUser];
             if(newUser && newUser !== activeUser) {
                 if(usuariosDB[newUser]) return alert("Ese usuario ya está en uso.");
